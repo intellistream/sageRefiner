@@ -47,6 +47,7 @@ coverage.xml
 *.cover
 *.log
 .pytest_cache/
+.benchmarks/
 
 # Translations
 *.mo

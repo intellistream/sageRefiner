@@ -5,15 +5,14 @@ sageRefiner - Intelligent Context Compression for RAG
 Standalone library providing state-of-the-art context compression algorithms.
 
 Quick Start:
-    >>> from sageRefiner import LongRefiner, RefinerConfig
+    >>> from sageRefiner import LongRefinerCompressor, RefinerConfig
     >>> config = RefinerConfig(algorithm="long_refiner", budget=2048)
-    >>> refiner = LongRefiner(config.to_dict())
-    >>> refiner.initialize()
-    >>> result = refiner.refine(query, documents, budget=2048)
+    >>> refiner = LongRefinerCompressor(config.to_dict())
+    >>> result = refiner.compress(question, documents, budget=2048)
 
 Available Algorithms:
-    - LongRefiner: Advanced selective compression with LLM-based importance scoring
-    - Reform: Efficient reformulation-based compression
+    - LongRefinerCompressor: Advanced selective compression with LLM-based importance scoring
+    - REFORMCompressor: Efficient attention-based compression
 
 For SAGE framework integration, use sage-middleware's RefinerAdapter instead.
 """
@@ -26,14 +25,21 @@ __license__ = "Apache-2.0"
 from .config import RefinerAlgorithm, RefinerConfig
 
 # Algorithms
-from .algorithms.LongRefiner.compressor import LongRefiner
-from .algorithms.reform.compressor import ReformCompressor
+from .algorithms.LongRefiner.compressor import LongRefinerCompressor
+from .algorithms.reform.compressor import REFORMCompressor
+
+# Aliases for convenience
+LongRefiner = LongRefinerCompressor
+ReformCompressor = REFORMCompressor
 
 __all__ = [
     # Config
     "RefinerConfig",
     "RefinerAlgorithm",
     # Algorithms
+    "LongRefinerCompressor",
+    "REFORMCompressor",
+    # Aliases
     "LongRefiner",
     "ReformCompressor",
     # Metadata

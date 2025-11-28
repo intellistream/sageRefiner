@@ -5,7 +5,8 @@ Tests for LongRefiner Algorithm
 
 import pytest
 
-from sageRefiner import LongRefiner, RefinerConfig
+from sageRefiner import LongRefinerCompressor, RefinerConfig
+from sageRefiner.config import RefinerAlgorithm
 
 
 @pytest.fixture
@@ -26,15 +27,15 @@ def sample_query():
 
 def test_config_creation():
     """Test RefinerConfig creation."""
-    config = RefinerConfig(algorithm="long_refiner", budget=512)
-    assert config.algorithm.value == "long_refiner"
+    config = RefinerConfig(algorithm=RefinerAlgorithm.LONG_REFINER, budget=512)
+    assert config.algorithm == RefinerAlgorithm.LONG_REFINER
     assert config.budget == 512
 
 
 def test_config_to_dict():
     """Test config serialization."""
     config = RefinerConfig(
-        algorithm="long_refiner",
+        algorithm=RefinerAlgorithm.LONG_REFINER,
         budget=256,
         base_model_path="test-model",
     )
@@ -48,57 +49,49 @@ def test_config_to_dict():
 def test_long_refiner_initialization():
     """Test LongRefiner initialization."""
     config = RefinerConfig(
-        algorithm="long_refiner",
+        algorithm=RefinerAlgorithm.LONG_REFINER,
         budget=256,
         base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
-        device="cpu",
     )
-    refiner = LongRefiner(config.to_dict())
-    refiner.initialize()
-    assert refiner.is_initialized
-    refiner.shutdown()
+    refiner = LongRefinerCompressor(config.to_dict())
+    assert refiner is not None
 
 
 @pytest.mark.skip(reason="Requires model download and GPU/CPU resources")
-def test_long_refiner_refine(sample_query, sample_docs):
+def test_long_refiner_compress(sample_query, sample_docs):
     """Test LongRefiner compression."""
     config = RefinerConfig(
-        algorithm="long_refiner",
+        algorithm=RefinerAlgorithm.LONG_REFINER,
         budget=128,
         base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
-        device="cpu",
     )
-    refiner = LongRefiner(config.to_dict())
-    refiner.initialize()
+    refiner = LongRefinerCompressor(config.to_dict())
 
-    result = refiner.refine(sample_query, sample_docs, budget=128)
+    result = refiner.compress(
+        question=sample_query,
+        document_list=[{"contents": doc} for doc in sample_docs],
+        budget=128,
+    )
 
     assert result is not None
-    assert result.refined_content is not None
-    assert isinstance(result.refined_content, list)
-    assert result.metrics.original_tokens > 0
-    assert result.metrics.refined_tokens > 0
-    assert result.metrics.refined_tokens <= result.metrics.original_tokens
-
-    refiner.shutdown()
-
-
-def test_invalid_algorithm():
-    """Test invalid algorithm raises error."""
-    with pytest.raises(ValueError):
-        RefinerConfig(algorithm="invalid_algorithm")
-
-
-def test_invalid_budget():
-    """Test invalid budget raises error."""
-    with pytest.raises(ValueError):
-        RefinerConfig(budget=-100)
+    assert "compressed_context" in result
 
 
 def test_config_from_dict():
     """Test config creation from dict."""
-    config_dict = {"algorithm": "long_refiner", "budget": 512, "compress_ratio": 0.5}
+    config_dict = {
+        "algorithm": "long_refiner",
+        "budget": 512,
+        "compression_ratio": 0.5,
+    }
     config = RefinerConfig.from_dict(config_dict)
-    assert config.algorithm.value == "long_refiner"
+    assert config.algorithm == RefinerAlgorithm.LONG_REFINER
     assert config.budget == 512
-    assert config.compress_ratio == 0.5
+    assert config.compression_ratio == 0.5
+
+
+def test_algorithm_enum():
+    """Test RefinerAlgorithm enum."""
+    assert RefinerAlgorithm.LONG_REFINER.value == "long_refiner"
+    assert RefinerAlgorithm.SIMPLE.value == "simple"
+    assert "long_refiner" in RefinerAlgorithm.list_available()

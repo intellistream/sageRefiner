@@ -2,8 +2,10 @@
 
 from sageRefiner import (
     LongRefiner,
+    LongRefinerCompressor,
     RefinerAlgorithm,
     RefinerConfig,
+    REFORMCompressor,
     ReformCompressor,
     __version__,
 )
@@ -13,9 +15,17 @@ def test_imports():
     """Test that all main imports are available."""
     assert RefinerConfig is not None
     assert RefinerAlgorithm is not None
-    assert LongRefiner is not None
-    assert ReformCompressor is not None
+    assert LongRefinerCompressor is not None
+    assert REFORMCompressor is not None
     assert __version__ is not None
+
+
+def test_aliases():
+    """Test that aliases work correctly."""
+    # LongRefiner is alias for LongRefinerCompressor
+    assert LongRefiner is LongRefinerCompressor
+    # ReformCompressor is alias for REFORMCompressor
+    assert ReformCompressor is REFORMCompressor
 
 
 def test_version():

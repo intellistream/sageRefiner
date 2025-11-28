@@ -14,9 +14,15 @@ References:
 """
 
 from .compressor import LongRefinerCompressor
-from .operator import LongRefinerOperator
 
 __all__ = [
     "LongRefinerCompressor",
-    "LongRefinerOperator",
 ]
+
+# Optional: SAGE operator (only available inside SAGE framework)
+try:
+    from .operator import LongRefinerOperator
+
+    __all__.append("LongRefinerOperator")
+except ImportError:
+    LongRefinerOperator = None

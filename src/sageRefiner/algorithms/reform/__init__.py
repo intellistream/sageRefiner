@@ -10,10 +10,16 @@ References:
 
 from .compressor import REFORMCompressor
 from .model_utils import AttentionHookExtractor
-from .operator import REFORMRefinerOperator
 
 __all__ = [
     "REFORMCompressor",
-    "REFORMRefinerOperator",
     "AttentionHookExtractor",
 ]
+
+# Optional: SAGE operator (only available inside SAGE framework)
+try:
+    from .operator import REFORMRefinerOperator
+
+    __all__.append("REFORMRefinerOperator")
+except ImportError:
+    REFORMRefinerOperator = None

@@ -32,7 +32,7 @@ pip install -e .
 ## Quick Start
 
 ```python
-from sageRefiner import LongRefiner, RefinerConfig
+from sageRefiner import LongRefinerCompressor, RefinerConfig
 
 # Configure the refiner
 config = RefinerConfig(
@@ -41,24 +41,31 @@ config = RefinerConfig(
     base_model_path="Qwen/Qwen2.5-3B-Instruct",
 )
 
-# Initialize
-refiner = LongRefiner(config.to_dict())
-refiner.initialize()
+# Initialize compressor
+compressor = LongRefinerCompressor(
+    base_model_path=config.base_model_path,
+    max_model_len=25000,
+    gpu_memory_utilization=0.5,
+)
 
 # Compress documents
 query = "What are the benefits of exercise?"
 documents = [
-    "Exercise improves cardiovascular health...",
-    "Regular physical activity boosts mental wellbeing...",
+    {"contents": "Exercise improves cardiovascular health..."},
+    {"contents": "Regular physical activity boosts mental wellbeing..."},
     # ... more documents
 ]
 
-result = refiner.refine(query, documents, budget=2048)
+result = compressor.compress(
+    question=query,
+    document_list=documents,
+    budget=2048,
+)
 
-print(f"Original tokens: {result.metrics.original_tokens}")
-print(f"Compressed tokens: {result.metrics.refined_tokens}")
-print(f"Compression ratio: {result.metrics.compression_rate:.2f}x")
-print(f"\nCompressed content:\n{result.refined_content}")
+print(f"Original tokens: {result['original_tokens']}")
+print(f"Compressed tokens: {result['compressed_tokens']}")
+print(f"Compression ratio: {result['compression_rate']:.2f}")
+print(f"\nCompressed content:\n{result['compressed_context']}")
 ```
 
 ## Algorithms
@@ -73,7 +80,7 @@ Based on selective compression with LLM-guided importance scoring. Best for:
 **Key Parameters:**
 - `budget`: Target token count
 - `base_model_path`: HuggingFace model for compression
-- `compress_ratio`: Compression aggressiveness (0.0-1.0)
+- `compression_ratio`: Compression aggressiveness (0.0-1.0)
 
 ### Reform
 
@@ -91,12 +98,8 @@ config = RefinerConfig(
     base_model_path="Qwen/Qwen2.5-3B-Instruct",
     
     # LongRefiner specific
-    compress_ratio=0.5,
+    compression_ratio=0.5,
     device="cuda",
-    batch_size=4,
-    
-    # Reform specific (if using reform algorithm)
-    # reformulation_style="concise",
 )
 ```
 

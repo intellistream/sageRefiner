@@ -39,7 +39,7 @@ def main():
         algorithm="long_refiner",
         budget=512,  # Target token count
         base_model_path="Qwen/Qwen2.5-0.5B-Instruct",  # Use small model for demo
-        compress_ratio=0.5,
+        compression_ratio=0.5,
         device="cuda",  # Change to "cpu" if no GPU available
     )
 
@@ -47,7 +47,7 @@ def main():
     print(f"  Algorithm: {config.algorithm.value}")
     print(f"  Budget: {config.budget} tokens")
     print(f"  Model: {config.base_model_path}")
-    print(f"  Compression Ratio: {config.compress_ratio}")
+    print(f"  Compression Ratio: {config.compression_ratio}")
     print()
 
     # Initialize refiner

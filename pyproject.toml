@@ -52,6 +52,7 @@ Repository = "https://github.com/intellistream/sageRefiner"
 "Bug Tracker" = "https://github.com/intellistream/sageRefiner/issues"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 exclude = ["tests*", "examples*"]
 
 [tool.black]
