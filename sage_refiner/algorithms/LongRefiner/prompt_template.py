@@ -56,21 +56,20 @@ class PromptTemplate:
 
             return truncated_messages
 
-        else:
-            assert isinstance(prompt, str)
-            tokenized_prompt = self.tokenizer(
-                prompt, truncation=False, return_tensors="pt"
-            ).input_ids[0]
+        assert isinstance(prompt, str)
+        tokenized_prompt = self.tokenizer(prompt, truncation=False, return_tensors="pt").input_ids[
+            0
+        ]
 
-            if len(tokenized_prompt) > self.max_input_len:
-                print(
-                    f"The input text length is greater than the maximum length ({len(tokenized_prompt)} > {self.max_input_len}) and has been truncated!"
-                )
-                half = int(self.max_input_len / 2)
-                prompt = self.tokenizer.decode(
-                    tokenized_prompt[:half], skip_special_tokens=True
-                ) + self.tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
-            return prompt
+        if len(tokenized_prompt) > self.max_input_len:
+            print(
+                f"The input text length is greater than the maximum length ({len(tokenized_prompt)} > {self.max_input_len}) and has been truncated!"
+            )
+            half = int(self.max_input_len / 2)
+            prompt = self.tokenizer.decode(
+                tokenized_prompt[:half], skip_special_tokens=True
+            ) + self.tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+        return prompt
 
     def get_prompt(
         self,
@@ -112,22 +111,24 @@ class PromptTemplate:
         user_prompt = self.user_prompt.format(**input_params)
 
         if self.is_chat and self.enable_chat:
-            input = []
+            prompt_input = []
             if system_prompt != "":
-                input.append({"role": "system", "content": system_prompt})
+                prompt_input.append({"role": "system", "content": system_prompt})
             if user_prompt != "":
-                input.append({"role": "user", "content": user_prompt})
+                prompt_input.append({"role": "user", "content": user_prompt})
             if not self.is_openai:
-                input = self.tokenizer.apply_chat_template(
-                    input, tokenize=False, add_generation_prompt=True
+                prompt_input = self.tokenizer.apply_chat_template(
+                    prompt_input, tokenize=False, add_generation_prompt=True
                 )
         else:
-            input = "\n\n".join([prompt for prompt in [system_prompt, user_prompt] if prompt != ""])
+            prompt_input = "\n\n".join(
+                [prompt for prompt in [system_prompt, user_prompt] if prompt != ""]
+            )
 
         if previous_gen is not None and previous_gen not in ["", " "] and self.is_openai is False:
-            input += previous_gen
+            prompt_input += previous_gen
 
-        return self.truncate_prompt(input)
+        return self.truncate_prompt(prompt_input)
 
     def format_reference(self, retrieval_result):
         """Format retrieval results as reference"""

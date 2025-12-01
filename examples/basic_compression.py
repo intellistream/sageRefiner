@@ -2,10 +2,10 @@
 Basic Compression Example
 =========================
 
-Demonstrates basic usage of sageRefiner for context compression.
+Demonstrates basic usage of sage_refiner for context compression.
 """
 
-from sageRefiner import LongRefiner, RefinerConfig
+from sage_refiner import LongRefiner, RefinerConfig
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     query = "What are the main benefits of regular exercise?"
 
     print("=" * 80)
-    print("sageRefiner - Basic Compression Example")
+    print("sage_refiner - Basic Compression Example")
     print("=" * 80)
     print(f"\nQuery: {query}")
     print(f"Documents: {len(documents)} items")

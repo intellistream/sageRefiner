@@ -7,7 +7,7 @@ Compare different compression algorithms on the same dataset.
 
 import time
 
-from sageRefiner import LongRefinerCompressor, REFORMCompressor, RefinerConfig
+from sage_refiner import LongRefinerCompressor, REFORMCompressor, RefinerConfig
 
 
 def generate_sample_docs():

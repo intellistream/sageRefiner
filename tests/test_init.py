@@ -1,8 +1,9 @@
 """Test package initialization."""
 
-from sageRefiner import (
+from sage_refiner import (
     LongRefiner,
     LongRefinerCompressor,
+    ProvenceCompressor,
     RefinerAlgorithm,
     RefinerConfig,
     REFORMCompressor,
@@ -17,6 +18,7 @@ def test_imports():
     assert RefinerAlgorithm is not None
     assert LongRefinerCompressor is not None
     assert REFORMCompressor is not None
+    assert ProvenceCompressor is not None
     assert __version__ is not None
 
 
