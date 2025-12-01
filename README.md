@@ -8,7 +8,8 @@ sageRefiner is a standalone Python library providing state-of-the-art context co
 
 - **Multiple Compression Algorithms**
   - **LongRefiner**: Advanced selective compression using LLM-based importance scoring
-  - **Reform**: Efficient reformulation-based compression
+  - **REFORM**: Efficient attention-based compression with KV cache optimization
+  - **Provence**: Sentence-level context pruning using DeBERTa-based scoring
   
 - **High Compression Ratios**: Achieve 2-10x compression while preserving key information
 - **Flexible Configuration**: Easy-to-use YAML/dict-based configuration
@@ -32,7 +33,7 @@ pip install -e .
 ## Quick Start
 
 ```python
-from sageRefiner import LongRefinerCompressor, RefinerConfig
+from sage_refiner import LongRefinerCompressor, RefinerConfig
 
 # Configure the refiner
 config = RefinerConfig(
@@ -82,12 +83,29 @@ Based on selective compression with LLM-guided importance scoring. Best for:
 - `base_model_path`: HuggingFace model for compression
 - `compression_ratio`: Compression aggressiveness (0.0-1.0)
 
-### Reform
+### REFORM
 
-Efficient reformulation-based compression. Best for:
+Efficient attention-based compression using attention head analysis. Best for:
 - Fast compression with lower compute requirements
 - Batch processing scenarios
 - When exact wording preservation is less critical
+
+**Key Parameters:**
+- `max_tokens`: Maximum tokens to keep
+- `selected_heads`: Attention heads for scoring
+- `use_kv_cache`: Enable KV cache optimization
+
+### Provence
+
+Sentence-level context pruning using DeBERTa-based relevance scoring. Best for:
+- Document-level pruning in RAG pipelines
+- When you need to filter out irrelevant documents
+- Scenarios with many retrieved documents
+
+**Key Parameters:**
+- `threshold`: Relevance threshold (0-1) for filtering
+- `reorder`: Whether to reorder by relevance score
+- `top_k`: Number of top documents to keep
 
 ## Configuration
 

@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/ -v --tb=short --ignore=tests/test_long_refiner.py::TestLongRefinerMocked
+          pytest tests/ -v --tb=short
 
   lint:
     runs-on: ubuntu-latest
