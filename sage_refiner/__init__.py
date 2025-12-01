@@ -14,6 +14,7 @@ Available Algorithms:
     - LongRefinerCompressor: Advanced selective compression with LLM-based importance scoring
     - REFORMCompressor: Efficient attention-based compression
     - ProvenceCompressor: Sentence-level context pruning
+    - AdaptiveCompressor: Query-aware multi-granularity compression (NEW)
 
 For SAGE framework integration, use sage-middleware's RefinerAdapter instead.
 """
@@ -45,3 +46,11 @@ __all__ = [
     # Metadata
     "__version__",
 ]
+
+# AdaptiveCompressor (new algorithm)
+try:
+    from .algorithms.adaptive.compressor import AdaptiveCompressor
+
+    __all__.append("AdaptiveCompressor")
+except ImportError:
+    AdaptiveCompressor = None
