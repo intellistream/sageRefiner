@@ -150,14 +150,12 @@ class TestLongRefinerMocked:
         return model
 
     @patch("sage_refiner.algorithms.LongRefiner.compressor.AutoTokenizer")
-    @patch("vllm.LLM", autospec=True)
     @patch(
         "sage_refiner.algorithms.LongRefiner.compressor.AutoModelForSequenceClassification"
     )
     def test_compress_returns_expected_structure(
         self,
         mock_auto_model,
-        mock_llm_class,
         mock_auto_tokenizer,
         sample_query,
         sample_doc_dicts,
@@ -167,7 +165,6 @@ class TestLongRefinerMocked:
         """Test that compress returns expected dict structure."""
         # Setup mocks
         mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer
-        mock_llm_class.return_value = mock_model
 
         mock_score_model = MagicMock()
         mock_score_model.cuda.return_value = mock_score_model
