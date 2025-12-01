@@ -9,12 +9,9 @@ REFORM Compression Operator for SAGE Pipeline
 import logging
 
 from sage.common.core.functions import MapFunction as MapOperator
-from sage.middleware.components.sage_refiner.python.algorithms.reform.compressor import (
-    REFORMCompressor,
-)
-from sage.middleware.components.sage_refiner.python.algorithms.reform.model_utils import (
-    AttentionHookExtractor,
-)
+
+from .compressor import REFORMCompressor
+from .model_utils import AttentionHookExtractor
 
 logger = logging.getLogger(__name__)
 

@@ -148,7 +148,7 @@ class LongRefinerCompressor:
             self.score_tokenizer = None
             self.local_score_func = self._cal_score_bm25
             return
-        elif "reranker" in score_model_name:
+        if "reranker" in score_model_name:
             self.score_model = AutoModelForSequenceClassification.from_pretrained(score_model_path)
             self.score_tokenizer = AutoTokenizer.from_pretrained(score_model_path, use_fast=False)
             self.local_score_func = self._cal_score_reranker
@@ -173,12 +173,12 @@ class LongRefinerCompressor:
             if question not in corpus_dict:
                 corpus_dict[question] = []
             corpus_dict[question].append(doc)
-        for q in corpus_dict.keys():
+        for q in corpus_dict:
             corpus_dict[q] = [d.split(" ") for d in corpus_dict[q]]
             corpus_dict[q] = BM25Okapi(corpus_dict[q])
             corpus_dict[q] = corpus_dict[q].get_scores(q.split(" ")).tolist()
         all_scores = []
-        for q, s in corpus_dict.items():
+        for _q, s in corpus_dict.items():
             all_scores.extend(s)
         return all_scores
 
@@ -221,12 +221,11 @@ class LongRefinerCompressor:
             if pooling_method == "mean":
                 last_hidden = last_hidden_state.masked_fill(~attention_mask[..., None].bool(), 0.0)
                 return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
-            elif pooling_method == "cls":
+            if pooling_method == "cls":
                 return last_hidden_state[:, 0]
-            elif pooling_method == "pooler":
+            if pooling_method == "pooler":
                 return pooler_output
-            else:
-                raise NotImplementedError("Pooling method not implemented!")
+            raise NotImplementedError("Pooling method not implemented!")
 
         batch_size = 512
         all_scores = []
@@ -320,8 +319,8 @@ class LongRefinerCompressor:
 
         # Build result dictionaries
         results = []
-        for question, refined_docs, orig_docs in zip(
-            question_list, refined_content_list, document_list
+        for _question, refined_docs, orig_docs in zip(
+            question_list, refined_content_list, document_list, strict=False
         ):
             # Calculate tokens
             original_text = "\n\n".join([doc.get("contents", str(doc)) for doc in orig_docs])
@@ -473,7 +472,7 @@ class LongRefinerCompressor:
                         outline += f"Section{section_idx}: {section_title}\n"
                         section_idx += 1
                     if section_dict["subsections"] != {}:
-                        for subsection, subsection_content in section_dict["subsections"].items():
+                        for subsection, _subsection_content in section_dict["subsections"].items():
                             outline += f"Subsection{subsection_idx}: {subsection}\n"
                             subsection_idx += 1
 
@@ -488,9 +487,9 @@ class LongRefinerCompressor:
 
         global_selection_result = []
         idx = 0
-        for question, item_doc_list in zip(question_list, structured_doc_list):
+        for _question, item_doc_list in zip(question_list, structured_doc_list):
             item_global_selection_result = []
-            for doc in item_doc_list:
+            for _doc in item_doc_list:
                 selected_title = output_list[idx].outputs[0].text
                 selected_title = json_repair.loads(selected_title)
                 if isinstance(selected_title, dict):
@@ -553,7 +552,7 @@ class LongRefinerCompressor:
                 original_doc_content, structured_doc["abstract"]
             )
         sections = structured_doc["sections"]
-        for section_title, section_dict in sections.items():
+        for _section_title, section_dict in sections.items():
             if section_dict["content"] != "":
                 section_dict["content"] = self._fill_full_content(
                     original_doc_content, section_dict["content"]
@@ -566,13 +565,13 @@ class LongRefinerCompressor:
 
         # Fill abstract if missing
         if "abstract" in structured_doc and structured_doc["abstract"] is None:
-            for section, section_item in structured_doc["sections"].items():
+            for _section, section_item in structured_doc["sections"].items():
                 if section_item["content"] is not None and section_item["content"] != "":
                     abs_text = original_doc_content.split(section_item["content"])[0]
                     structured_doc["abstract"] = abs_text
                     break
                 if section_item["subsections"] != {}:
-                    for subsection, subsection_content in section_item["subsections"].items():
+                    for _subsection, subsection_content in section_item["subsections"].items():
                         if subsection_content is not None and subsection_content != "":
                             abs_text = original_doc_content.split(subsection_content)[0]
                             structured_doc["abstract"] = abs_text
@@ -625,8 +624,7 @@ class LongRefinerCompressor:
         full_content = re.findall(pattern, content)
         if full_content == []:
             return None
-        else:
-            return full_content[-1]
+        return full_content[-1]
 
     def _fill_full_content(self, content: str, part_content: str) -> str:
         """Fill placeholders in partial content
@@ -641,11 +639,7 @@ class LongRefinerCompressor:
 
         def cut(s, sub_s):
             index = s.find(sub_s)
-            if index != -1:
-                result = s[index + len(sub_s) :]
-            else:
-                result = s
-            return result
+            return s[index + len(sub_s) :] if index != -1 else s
 
         if "<br>" in part_content:
             part_sequences = part_content.split("<br>")
@@ -661,8 +655,7 @@ class LongRefinerCompressor:
                 temp_content = cut(temp_content, full_content)
         if total_content == []:
             return None
-        else:
-            return "\n".join(total_content)
+        return "\n".join(total_content)
 
     def _get_paragraphs(self, text: str) -> list[str]:
         """Split text into paragraphs"""
@@ -676,9 +669,8 @@ class LongRefinerCompressor:
             if len(chunk.split(" ")) < 100:
                 exist_str = chunk
                 continue
-            else:
-                exist_str = ""
-                new_chunks.append(chunk)
+            exist_str = ""
+            new_chunks.append(chunk)
         if exist_str != "":
             new_chunks.append(exist_str)
         return new_chunks
@@ -803,7 +795,7 @@ class LongRefinerCompressor:
                     )
 
         # Min-max normalization
-        for idx, node_list in idx2node.items():
+        for _idx, node_list in idx2node.items():
             score_list = [i["score"] for i in node_list]
             min_score, max_score = min(score_list), max(score_list)
             for node in node_list:
@@ -855,10 +847,9 @@ class LongRefinerCompressor:
         )
 
         # Extract final content
-        final_contents_list = [
+        return [
             [node["contents"] for node in item_node_list] for item_node_list in refined_node_list
         ]
-        return final_contents_list
 
     def _collect_hierarchical_nodes(
         self,
@@ -951,9 +942,8 @@ class LongRefinerCompressor:
         """
         # Process budget and ratio
         if budget is None:
-            assert ratio is not None and 0 < ratio < 1, (
-                "budget is None, ratio must be between 0 and 1"
-            )
+            assert ratio is not None, "budget is None, ratio must be provided"
+            assert 0 < ratio < 1, "ratio must be between 0 and 1"
             idx2budget = {}
             for idx in idx2node:
                 item_documents = document_list[idx]
@@ -1025,9 +1015,8 @@ class LongRefinerCompressor:
 
                 if node_length > pre_budget:
                     break
-                else:
-                    cand_node_list.append(node)
-                    pre_budget = pre_budget - node_length
+                cand_node_list.append(node)
+                pre_budget = pre_budget - node_length
 
             # Final selection with actual budget
             actual_budget = idx2budget[idx]
@@ -1051,9 +1040,8 @@ class LongRefinerCompressor:
                     ]
                     if len(parent_nodes) > 0:
                         continue
-                    else:
-                        final_node_list.append(node)
-                        actual_budget = actual_budget - node["length"]
+                    final_node_list.append(node)
+                    actual_budget = actual_budget - node["length"]
 
                 elif node["type"] == "abstract":
                     # Check if child nodes exist

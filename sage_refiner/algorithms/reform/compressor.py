@@ -343,10 +343,7 @@ class REFORMCompressor:
                 component_tensor = qkv[head_type]  # [batch, num_heads, seq_len, head_dim]
 
                 # GQA-safe head indexing: K/V use fewer heads, need modulo
-                if head_type in ["K", "V"]:
-                    actual_head_idx = head_idx % num_kv_heads
-                else:
-                    actual_head_idx = head_idx
+                actual_head_idx = head_idx % num_kv_heads if head_type in ["K", "V"] else head_idx
 
                 # Extract head embedding for this token
                 head_embed = component_tensor[0, actual_head_idx, token_idx, :]  # [head_dim]
@@ -394,12 +391,10 @@ class REFORMCompressor:
         else:
             effective_len = context_len
 
-        scored_tokens = [
+        return [
             (smoothed_scores[idx].item(), idx + global_offset, scoring_context_tokens[idx])
             for idx in range(effective_len)
         ]
-
-        return scored_tokens
 
     def _global_top_k_selection(
         self, all_scores: list[tuple], total_context_tokens: int

@@ -357,7 +357,7 @@ class AttentionHookExtractor:
         # ============ Pass 3: Merge QKV data ============
         merged_qkv = {}
 
-        for layer_idx in context_qkv.keys():
+        for layer_idx in context_qkv:
             if layer_idx not in question_qkv:
                 logger.warning(f"Layer {layer_idx} missing in question QKV")
                 continue

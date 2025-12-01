@@ -7,8 +7,7 @@ Compare different compression algorithms on the same dataset.
 
 import time
 
-from sageRefiner import LongRefiner, RefinerConfig
-from sageRefiner.algorithms.reform.compressor import ReformCompressor
+from sage_refiner import LongRefinerCompressor, REFORMCompressor, RefinerConfig
 
 
 def generate_sample_docs():
@@ -80,10 +79,10 @@ def main():
         algorithm="long_refiner",
         budget=budget,
         base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
-        compress_ratio=0.5,
+        compression_ratio=0.5,
         device="cpu",  # Use CPU for reproducibility
     )
-    refiner_long = LongRefiner(config_long.to_dict())
+    refiner_long = LongRefinerCompressor(config_long.to_dict())
     results.append(test_algorithm("LongRefiner", refiner_long, query, documents, budget))
 
     # Test Reform
@@ -93,7 +92,7 @@ def main():
         base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
         device="cpu",
     )
-    refiner_reform = ReformCompressor(config_reform.to_dict())
+    refiner_reform = REFORMCompressor(config_reform.to_dict())
     results.append(test_algorithm("Reform", refiner_reform, query, documents, budget))
 
     # Summary

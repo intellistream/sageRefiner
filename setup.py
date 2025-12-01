@@ -1,6 +1,6 @@
 """
-sageRefiner Setup Script
-=========================
+sage_refiner Setup Script
+==========================
 
 Standalone context compression library for RAG systems.
 """
@@ -20,17 +20,27 @@ VERSION = "0.1.0"
 # Core dependencies
 INSTALL_REQUIRES = [
     "torch>=2.0.0",
-    "transformers>=4.30.0",
+    "transformers>=4.52.0,<4.56.0",
     "numpy>=1.24.0",
     "pyyaml>=6.0",
+    "json-repair>=0.30.0,<1.0.0",
 ]
 
 # Development dependencies
 EXTRAS_REQUIRE = {
+    "vllm": [
+        "vllm>=0.9.2",
+    ],
+    "reranker": [
+        "FlagEmbedding>=1.0.0",
+    ],
+    "full": [
+        "vllm>=0.9.2",
+        "FlagEmbedding>=1.0.0",
+    ],
     "dev": [
         "pytest>=7.0.0",
         "pytest-cov>=4.0.0",
-        "black>=23.0.0",
         "ruff>=0.1.0",
         "mypy>=1.0.0",
     ],
@@ -54,7 +64,7 @@ setup(
         "Source Code": "https://github.com/intellistream/sageRefiner",
         "Documentation": "https://github.com/intellistream/SAGE/tree/main/docs",
     },
-    packages=find_packages(exclude=["tests", "examples"]),
+    packages=find_packages(exclude=["tests", "tests.*", "examples", "examples.*"]),
     python_requires=">=3.10",
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
