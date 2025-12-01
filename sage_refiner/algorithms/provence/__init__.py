@@ -13,9 +13,16 @@ References:
 """
 
 from .compressor import ProvenceCompressor
-from .operator import ProvenceRefinerOperator
 
 __all__ = [
     "ProvenceCompressor",
-    "ProvenceRefinerOperator",
 ]
+
+# Optional: SAGE operator (only when running inside SAGE framework)
+try:
+    from .operator import ProvenceRefinerOperator
+
+    __all__.append("ProvenceRefinerOperator")
+except ImportError:
+    # Running standalone without SAGE - operator not available
+    ProvenceRefinerOperator = None

@@ -22,13 +22,10 @@ __version__ = "0.1.0"
 __author__ = "SAGE Team"
 __license__ = "Apache-2.0"
 
-# Configuration
-from .config import RefinerAlgorithm, RefinerConfig
-
-# Algorithms
 from .algorithms.LongRefiner.compressor import LongRefinerCompressor
 from .algorithms.provence.compressor import ProvenceCompressor
 from .algorithms.reform.compressor import REFORMCompressor
+from .config import RefinerAlgorithm, RefinerConfig
 
 # Aliases for convenience
 LongRefiner = LongRefinerCompressor
