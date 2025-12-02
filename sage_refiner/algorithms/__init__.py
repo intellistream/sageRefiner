@@ -4,15 +4,13 @@ Refiner Algorithms
 
 Collection of context compression and refinement algorithms.
 
-Algorithms:
-- LongRefiner: Three-stage LLM-driven compression
-- REFORM: Attention-head based token-level compression
-- Provence: DeBERTa sentence-level pruning
-- Adaptive: Multi-granularity query-aware compression
-- LLMLingua: Perplexity-based token-level compression (Microsoft)
+Available Algorithms:
+    - REFORM: Attention-head driven token selection for RAG context compression
+    - LongRefiner: Long document refinement with sliding window
+    - Provence: Provenance-aware context compression
+    - LongLLMLingua: Question-aware prompt compression for long documents
+    - LLMLingua2: Fast BERT-based token classification compression
 """
-
-import logging
 
 # Core compressors (always available)
 from .LongRefiner import LongRefinerCompressor
@@ -29,71 +27,47 @@ __all__ = [
     "ProvenceCompressor",
 ]
 
-_logger = logging.getLogger(__name__)
-
-# Adaptive compressor (new algorithm)
+# LongLLMLingua: Question-aware compression for long documents
 try:
-    from .adaptive import (
-        AdaptiveCompressor,
-        Granularity,  # noqa: F401
-        GranularitySelector,  # noqa: F401
-        InformationDensityAnalyzer,  # noqa: F401
-        QueryClassifier,
-        QueryType,  # noqa: F401
-    )
+    from .longllmlingua import LongLLMLinguaCompressor
 
-    __all__.extend(
-        [
-            "AdaptiveCompressor",
-            "QueryClassifier",
-            "QueryType",
-            "GranularitySelector",
-            "Granularity",
-            "InformationDensityAnalyzer",
-        ]
-    )
-except ImportError as e:
-    # Dependencies not available
-    AdaptiveCompressor = None
-    QueryClassifier = None
-    _logger.debug(f"Adaptive compressor not available: {e}")
+    __all__.append("LongLLMLinguaCompressor")
+except ImportError:
+    LongLLMLinguaCompressor = None
 
-# LLMLingua compressor (optional dependency: llmlingua)
+# Optional: LLMLingua-2 compressor (requires LLMLingua dependencies)
 try:
-    from .llmlingua import LLMLinguaCompressor
+    from .llmlingua2 import LLMLingua2Compressor
 
-    __all__.append("LLMLinguaCompressor")
-except ImportError as e:
-    # llmlingua not installed
-    LLMLinguaCompressor = None
-    _logger.debug(f"LLMLingua compressor not available: {e}")
+    __all__.append("LLMLingua2Compressor")
+except ImportError:
+    LLMLingua2Compressor = None
 
 # Optional: SAGE operators (only when running inside SAGE framework)
 try:
-    from .adaptive import AdaptiveRefinerOperator
     from .LongRefiner import LongRefinerOperator
     from .provence import ProvenceRefinerOperator
     from .reform import REFORMRefinerOperator
 
-    __all__.extend(
-        [
-            "LongRefinerOperator",
-            "REFORMRefinerOperator",
-            "ProvenceRefinerOperator",
-            "AdaptiveRefinerOperator",
-        ]
-    )
+    __all__.extend(["LongRefinerOperator", "REFORMRefinerOperator", "ProvenceRefinerOperator"])
 except ImportError:
     # Running standalone without SAGE - operators not available
     LongRefinerOperator = None
     REFORMRefinerOperator = None
     ProvenceRefinerOperator = None
-    AdaptiveRefinerOperator = None
 
-# LLMLingua operator (optional)
+# LongLLMLingua operator (requires SAGE framework + LLMLingua)
 try:
-    from .llmlingua import LLMLinguaRefinerOperator
+    from .longllmlingua import LongLLMLinguaOperator
 
-    __all__.append("LLMLinguaRefinerOperator")
+    __all__.append("LongLLMLinguaOperator")
 except ImportError:
-    LLMLinguaRefinerOperator = None
+    LongLLMLinguaOperator = None
+
+# Optional: LLMLingua-2 operator (requires SAGE framework + LLMLingua)
+try:
+    from .llmlingua2 import LLMLingua2Operator
+
+    __all__.append("LLMLingua2Operator")
+except ImportError:
+    LLMLingua2Operator = None

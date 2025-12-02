@@ -14,8 +14,10 @@ class RefinerAlgorithm(str, Enum):
     """支持的Refiner算法"""
 
     LONG_REFINER = "long_refiner"  # LongRefiner算法
-    ECORAG = "ecorag"  # ECoRAG算法 (待实现)
-    XRAG = "xrag"  # xRAG算法 (待实现)
+    REFORM = "reform"  # REFORM注意力头压缩
+    PROVENCE = "provence"  # Provence句子级剪枝
+    LLMLINGUA2 = "llmlingua2"  # LLMLingua-2 BERT压缩
+    LONGLLMLINGUA = "longllmlingua"  # LongLLMLingua问题感知压缩
     SIMPLE = "simple"  # 简单截断算法
     NONE = "none"  # 不压缩
 
