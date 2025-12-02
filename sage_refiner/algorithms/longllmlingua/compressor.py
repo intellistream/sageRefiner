@@ -352,7 +352,9 @@ class LongLLMLinguaCompressor:
             if use_sentence_level_filter is not None
             else defaults["use_sentence_level_filter"]
         )
-        context_budget = context_budget if context_budget is not None else defaults["context_budget"]
+        context_budget = (
+            context_budget if context_budget is not None else defaults["context_budget"]
+        )
         condition_compare = (
             condition_compare if condition_compare is not None else defaults["condition_compare"]
         )

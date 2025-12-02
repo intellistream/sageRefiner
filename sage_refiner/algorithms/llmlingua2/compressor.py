@@ -95,9 +95,7 @@ class LLMLingua2Compressor:
         self._compressor = None
         self._initialized = False
 
-        logger.info(
-            f"LLMLingua2Compressor created with model={self.model_name}, device={device}"
-        )
+        logger.info(f"LLMLingua2Compressor created with model={self.model_name}, device={device}")
 
     def _ensure_initialized(self) -> None:
         """Ensure the underlying PromptCompressor is initialized."""
@@ -266,8 +264,10 @@ class LLMLingua2Compressor:
         Returns:
             Compression result dictionary.
         """
-        logger.info(f"Compressing {len(context) if isinstance(context, list) else 1} "
-                   f"documents for question: '{question[:50]}...'")
+        logger.info(
+            f"Compressing {len(context) if isinstance(context, list) else 1} "
+            f"documents for question: '{question[:50]}...'"
+        )
 
         return self.compress(
             context=context,

@@ -160,11 +160,19 @@ class LongLLMLinguaOperator(MapOperator):
 
             rate = self.cfg.get("rate", cfg["rate"])
             target_token = self.cfg.get("target_token")  # None is fine; overrides rate if set
-            condition_in_question = self.cfg.get("condition_in_question", cfg["condition_in_question"])
+            condition_in_question = self.cfg.get(
+                "condition_in_question", cfg["condition_in_question"]
+            )
             reorder_context = self.cfg.get("reorder_context", cfg["reorder_context"])
-            dynamic_ratio = self.cfg.get("dynamic_context_compression_ratio", cfg["dynamic_context_compression_ratio"])
-            use_context_filter = self.cfg.get("use_context_level_filter", cfg["use_context_level_filter"])
-            use_sentence_filter = self.cfg.get("use_sentence_level_filter", cfg["use_sentence_level_filter"])
+            dynamic_ratio = self.cfg.get(
+                "dynamic_context_compression_ratio", cfg["dynamic_context_compression_ratio"]
+            )
+            use_context_filter = self.cfg.get(
+                "use_context_level_filter", cfg["use_context_level_filter"]
+            )
+            use_sentence_filter = self.cfg.get(
+                "use_sentence_level_filter", cfg["use_sentence_level_filter"]
+            )
             use_token_filter = self.cfg.get("use_token_level_filter", cfg["use_token_level_filter"])
             context_budget = self.cfg.get("context_budget", cfg["context_budget"])
             condition_compare = self.cfg.get("condition_compare", cfg["condition_compare"])
@@ -192,9 +200,7 @@ class LongLLMLinguaOperator(MapOperator):
             compressed_tokens = compress_result["compressed_tokens"]
 
             # Calculate compression rate
-            compression_rate = (
-                compressed_tokens / original_tokens if original_tokens > 0 else 1.0
-            )
+            compression_rate = compressed_tokens / original_tokens if original_tokens > 0 else 1.0
 
             self.logger.info(
                 f"LongLLMLingua Compression: {original_tokens} -> {compressed_tokens} tokens "

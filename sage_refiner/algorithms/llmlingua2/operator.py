@@ -97,10 +97,7 @@ class LLMLingua2Operator(MapOperator):
             max_batch_size=self.cfg.get("max_batch_size", 50),
             max_force_token=self.cfg.get("max_force_token", 100),
         )
-        logger.info(
-            f"LLMLingua2 Compressor initialized with model: "
-            f"{self._compressor.model_name}"
-        )
+        logger.info(f"LLMLingua2 Compressor initialized with model: {self._compressor.model_name}")
 
     def execute(self, data: dict[str, Any]) -> dict[str, Any]:
         """Execute compression on input data.
@@ -142,10 +139,7 @@ class LLMLingua2Operator(MapOperator):
         docs_text = self._extract_document_texts(retrieval_results)
 
         # Log input statistics
-        logger.info(
-            f"LLMLingua2: Processing {len(docs_text)} documents, "
-            f"query: '{query[:50]}...'"
-        )
+        logger.info(f"LLMLingua2: Processing {len(docs_text)} documents, query: '{query[:50]}...'")
 
         try:
             # Get compression parameters from config
@@ -178,9 +172,7 @@ class LLMLingua2Operator(MapOperator):
             compressed_tokens = compress_result["compressed_tokens"]
 
             # Calculate compression rate
-            compression_rate = (
-                compressed_tokens / origin_tokens if origin_tokens > 0 else 1.0
-            )
+            compression_rate = compressed_tokens / origin_tokens if origin_tokens > 0 else 1.0
 
             # Log compression results
             logger.info(
@@ -210,9 +202,7 @@ class LLMLingua2Operator(MapOperator):
             result_data["compression_rate"] = 1.0
             return result_data
 
-    def _extract_document_texts(
-        self, retrieval_results: list[dict[str, Any] | str]
-    ) -> list[str]:
+    def _extract_document_texts(self, retrieval_results: list[dict[str, Any] | str]) -> list[str]:
         """Extract text content from retrieval results.
 
         Args:
