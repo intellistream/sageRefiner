@@ -16,7 +16,7 @@ References:
     https://arxiv.org/abs/2310.06839
 """
 
-from .compressor import LongLLMLinguaCompressor, DEFAULT_LONG_LLMLINGUA_CONFIG
+from .compressor import DEFAULT_LONG_LLMLINGUA_CONFIG, LongLLMLinguaCompressor
 
 __all__ = [
     "LongLLMLinguaCompressor",
