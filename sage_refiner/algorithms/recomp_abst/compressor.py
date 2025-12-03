@@ -84,7 +84,7 @@ class RECOMPAbstractiveCompressor:
                 "bfloat16": torch.bfloat16,
                 "float32": torch.float32,
             }
-            self.torch_dtype = dtype_map.get(torch_dtype, None)
+            self.torch_dtype = dtype_map.get(torch_dtype)
         else:
             # Auto select based on device
             if self.device == "cuda" and torch.cuda.is_available():
@@ -304,7 +304,7 @@ class RECOMPAbstractiveCompressor:
                 )
 
             # Decode and compute stats
-            for j, (ctx, output_ids) in enumerate(zip(batch_contexts, outputs)):
+            for ctx, output_ids in zip(batch_contexts, outputs):
                 summary = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
 
                 # Handle empty summary

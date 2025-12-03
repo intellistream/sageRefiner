@@ -47,8 +47,7 @@ def mean_pooling(token_embeddings: torch.Tensor, attention_mask: torch.Tensor) -
     # Mask out padding tokens
     token_embeddings = token_embeddings.masked_fill(~attention_mask[..., None].bool(), 0.0)
     # Sum and divide by number of non-padding tokens
-    sentence_embeddings = token_embeddings.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
-    return sentence_embeddings
+    return token_embeddings.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
 
 class RECOMPExtractiveCompressor:
@@ -205,9 +204,7 @@ class RECOMPExtractiveCompressor:
             sentence_embs = embeddings[1:]  # [num_sentences, hidden_dim]
 
             # Compute dot product scores (matches original RECOMP behavior)
-            scores = torch.mv(sentence_embs, query_emb)  # [num_sentences]
-
-            return scores
+            return torch.mv(sentence_embs, query_emb)  # [num_sentences]
 
     def _count_tokens(self, text: str) -> int:
         """Count tokens in text.
