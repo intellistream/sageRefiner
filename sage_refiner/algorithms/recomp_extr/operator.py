@@ -173,8 +173,7 @@ class RECOMPExtractiveOperator(MapOperator):
 
         # Log input statistics
         logger.info(
-            f"RECOMP Extractive: Processing {len(docs_text)} documents, "
-            f"query: '{query[:50]}...'"
+            f"RECOMP Extractive: Processing {len(docs_text)} documents, query: '{query[:50]}...'"
         )
 
         try:

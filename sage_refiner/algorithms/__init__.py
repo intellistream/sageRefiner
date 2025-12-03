@@ -59,13 +59,15 @@ try:
     from .recomp_extr import RECOMPExtractiveOperator
     from .reform import REFORMRefinerOperator
 
-    __all__.extend([
-        "LongRefinerOperator",
-        "REFORMRefinerOperator",
-        "ProvenceRefinerOperator",
-        "RECOMPExtractiveOperator",
-        "RECOMPAbstractiveOperator",
-    ])
+    __all__.extend(
+        [
+            "LongRefinerOperator",
+            "REFORMRefinerOperator",
+            "ProvenceRefinerOperator",
+            "RECOMPExtractiveOperator",
+            "RECOMPAbstractiveOperator",
+        ]
+    )
 except ImportError:
     # Running standalone without SAGE - operators not available
     LongRefinerOperator = None

@@ -169,8 +169,7 @@ class RECOMPAbstractiveOperator(MapOperator):
 
         # Log input statistics
         logger.info(
-            f"RECOMP Abstractive: Processing {len(docs_text)} documents, "
-            f"query: '{query[:50]}...'"
+            f"RECOMP Abstractive: Processing {len(docs_text)} documents, query: '{query[:50]}...'"
         )
 
         try:

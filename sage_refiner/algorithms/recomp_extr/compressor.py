@@ -302,8 +302,7 @@ class RECOMPExtractiveCompressor:
 
         if not filtered_scores:
             logger.warning(
-                f"No sentences above threshold {score_threshold}, "
-                f"selecting top {top_k} anyway"
+                f"No sentences above threshold {score_threshold}, selecting top {top_k} anyway"
             )
             filtered_scores = indexed_scores
 
@@ -413,9 +412,7 @@ class RECOMPExtractiveCompressor:
             "selected_indices": selected_indices,
         }
 
-    def compress_batch(
-        self, contexts: list[str], questions: list[str]
-    ) -> list[dict[str, Any]]:
+    def compress_batch(self, contexts: list[str], questions: list[str]) -> list[dict[str, Any]]:
         """Batch compress multiple context-question pairs.
 
         Args:
