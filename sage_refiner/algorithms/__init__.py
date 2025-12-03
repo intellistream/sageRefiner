@@ -6,6 +6,8 @@ Collection of context compression and refinement algorithms.
 
 Available Algorithms:
     - REFORM: Attention-head driven token selection for RAG context compression
+    - RECOMP Extractive: Sentence-level extractive compression with dual encoders
+    - RECOMP Abstractive: T5-based abstractive summarization compression
     - LongRefiner: Long document refinement with sliding window
     - Provence: Provenance-aware context compression
     - LongLLMLingua: Question-aware prompt compression for long documents
@@ -15,12 +17,18 @@ Available Algorithms:
 # Core compressors (always available)
 from .LongRefiner import LongRefinerCompressor
 from .provence import ProvenceCompressor
+from .recomp_abst import RECOMPAbstractiveCompressor
+from .recomp_extr import RECOMPExtractiveCompressor
 from .reform import AttentionHookExtractor, REFORMCompressor
 
 __all__ = [
     # REFORM
     "REFORMCompressor",
     "AttentionHookExtractor",
+    # RECOMP Extractive
+    "RECOMPExtractiveCompressor",
+    # RECOMP Abstractive
+    "RECOMPAbstractiveCompressor",
     # LongRefiner
     "LongRefinerCompressor",
     # Provence
@@ -47,14 +55,24 @@ except ImportError:
 try:
     from .LongRefiner import LongRefinerOperator
     from .provence import ProvenceRefinerOperator
+    from .recomp_abst import RECOMPAbstractiveOperator
+    from .recomp_extr import RECOMPExtractiveOperator
     from .reform import REFORMRefinerOperator
 
-    __all__.extend(["LongRefinerOperator", "REFORMRefinerOperator", "ProvenceRefinerOperator"])
+    __all__.extend([
+        "LongRefinerOperator",
+        "REFORMRefinerOperator",
+        "ProvenceRefinerOperator",
+        "RECOMPExtractiveOperator",
+        "RECOMPAbstractiveOperator",
+    ])
 except ImportError:
     # Running standalone without SAGE - operators not available
     LongRefinerOperator = None
     REFORMRefinerOperator = None
     ProvenceRefinerOperator = None
+    RECOMPExtractiveOperator = None
+    RECOMPAbstractiveOperator = None
 
 # LongLLMLingua operator (requires SAGE framework + LLMLingua)
 try:
