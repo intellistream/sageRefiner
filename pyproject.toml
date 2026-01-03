@@ -3,14 +3,14 @@ requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sage-refiner"
+name = "isage-refiner"
 version = "0.1.0"
 description = "Intelligent context compression algorithms for RAG systems"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
-    {name = "SAGE Team", email = "sage-dev@example.com"}
+    {name = "IntelliStream Team", email = "shuhao_zhang@hust.edu.cn"}
 ]
 keywords = ["rag", "llm", "compression", "context", "nlp", "ai", "ml"]
 classifiers = [
@@ -26,10 +26,10 @@ classifiers = [
 ]
 
 dependencies = [
-    "torch>=2.0.0",
+    "torch>=2.7.0,<3.0.0",
     "transformers>=4.52.0,<4.56.0",
-    "numpy>=1.24.0",
-    "pyyaml>=6.0",
+    "numpy>=1.26.0,<2.3.0",
+    "pyyaml>=6.0,<7.0",
     "json-repair>=0.30.0,<1.0.0",
 ]
 
@@ -57,7 +57,7 @@ test = [
 
 [project.urls]
 Homepage = "https://github.com/intellistream/sageRefiner"
-Documentation = "https://github.com/intellistream/SAGE/tree/main/docs"
+Documentation = "https://intellistream.github.io/SAGE/"
 Repository = "https://github.com/intellistream/sageRefiner"
 "Bug Tracker" = "https://github.com/intellistream/sageRefiner/issues"
 

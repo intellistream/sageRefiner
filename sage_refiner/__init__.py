@@ -19,8 +19,8 @@ Available Algorithms:
 For SAGE framework integration, use sage-middleware's RefinerAdapter instead.
 """
 
-__version__ = "0.1.0"
-__author__ = "SAGE Team"
+from ._version import __author__, __email__, __version__
+
 __license__ = "Apache-2.0"
 
 from .algorithms.LongRefiner.compressor import LongRefinerCompressor
@@ -33,6 +33,10 @@ LongRefiner = LongRefinerCompressor
 ReformCompressor = REFORMCompressor
 
 __all__ = [
+    # Metadata
+    "__version__",
+    "__author__",
+    "__email__",
     # Config
     "RefinerConfig",
     "RefinerAlgorithm",
@@ -43,8 +47,6 @@ __all__ = [
     # Aliases
     "LongRefiner",
     "ReformCompressor",
-    # Metadata
-    "__version__",
 ]
 
 # AdaptiveCompressor (new algorithm)
