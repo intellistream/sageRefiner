@@ -23,7 +23,7 @@ from sage.libs.foundation.io.batch import HFDatasetBatch
 
 # RECOMPAbstractiveOperator may not be available yet (depends on Task 2 completion)
 try:
-    from sage.middleware.components.sage_refiner import RECOMPAbstractiveOperator
+    from sage_refiner.algorithms.recomp_abst import RECOMPAbstractiveOperator
 
     if RECOMPAbstractiveOperator is None:
         raise ImportError("RECOMPAbstractiveOperator is None")

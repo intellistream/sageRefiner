@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 # Project info
 PROJECT_NAME="sageRefiner"
-MIN_PYTHON_VERSION="3.10"
+MIN_PYTHON_VERSION="3.11"
 
 echo -e "${BLUE}"
 echo "╔════════════════════════════════════════════════════════════════╗"
@@ -64,38 +64,59 @@ elif [ -n "$VIRTUAL_ENV" ]; then
 fi
 
 if [ "$IN_VENV" = true ]; then
-    echo "Using existing ${VENV_TYPE} environment for installation"
-    echo -e "${GREEN}✓ Virtual environment check passed${NC}\n"
-else
-    # Ask about virtual environment creation
-    read -p "Create a new virtual environment? (recommended) [Y/n]: " create_venv
+    read -p "Create a new conda environment? [y/N]: " create_new
+    create_new=${create_new:-N}
+    
+    if [[ $create_new =~ ^[Yy]$ ]]; then
+        # Proceed to create new conda environment
+        IN_VENV=false
+    else
+        echo "Using existing ${VENV_TYPE} environment for installation"
+        echo -e "${GREEN}✓ Virtual environment check passed${NC}\n"
+    fi
+fi
+
+if [ "$IN_VENV" = false ]; then
+    # Check if conda is available
+    if ! command -v conda &> /dev/null; then
+        echo -e "${RED}Error: conda is not installed or not in PATH${NC}"
+        echo "Please install Miniconda or Anaconda first"
+        echo "Visit: https://docs.conda.io/en/latest/miniconda.html"
+        exit 1
+    fi
+
+    # Ask about conda environment creation
+    read -p "Create a new conda environment? (recommended) [Y/n]: " create_venv
     create_venv=${create_venv:-Y}
 
     if [[ $create_venv =~ ^[Yy]$ ]]; then
-        VENV_DIR=".venv"
-        
-        if [ -d "$VENV_DIR" ]; then
-            echo "Virtual environment already exists at $VENV_DIR"
+        read -p "Enter conda environment name (default: sagerefiner): " conda_env_name
+        conda_env_name=${conda_env_name:-sagerefiner}
+
+        # Check if conda environment already exists
+        if conda env list | grep -q "^${conda_env_name} "; then
+            echo "Conda environment '$conda_env_name' already exists"
             read -p "Remove and recreate? [y/N]: " recreate
             if [[ $recreate =~ ^[Yy]$ ]]; then
-                echo "Removing existing virtual environment..."
-                rm -rf "$VENV_DIR"
+                echo "Removing existing conda environment..."
+                conda env remove -n "$conda_env_name" -y
+                echo "Creating new conda environment '$conda_env_name' with Python ${MIN_PYTHON_VERSION}..."
+                conda create -n "$conda_env_name" python="${MIN_PYTHON_VERSION}" -y
             else
-                echo "Using existing virtual environment"
+                echo "Using existing conda environment"
             fi
+        else
+            echo "Creating conda environment '$conda_env_name' with Python ${MIN_PYTHON_VERSION}..."
+            conda create -n "$conda_env_name" python="${MIN_PYTHON_VERSION}" -y
         fi
-        
-        if [ ! -d "$VENV_DIR" ]; then
-            echo "Creating virtual environment at $VENV_DIR..."
-            python3 -m venv "$VENV_DIR"
-        fi
-        
-        echo "Activating virtual environment..."
-        source "$VENV_DIR/bin/activate"
-        echo -e "${GREEN}✓ Virtual environment activated${NC}\n"
+
+        echo "Activating conda environment..."
+        eval "$(conda shell.bash hook)"
+        conda activate "$conda_env_name"
+        echo -e "${GREEN}✓ Conda environment activated${NC}\n"
     else
-        echo "Skipping virtual environment creation"
-        echo -e "${YELLOW}Warning: Installing into system Python (not recommended)${NC}\n"
+        echo "Skipping conda environment creation"
+        echo -e "${YELLOW}Warning: Installing without conda environment (not recommended)${NC}\n"
     fi
 fi
 
@@ -107,13 +128,11 @@ echo -e "${GREEN}✓ pip upgraded${NC}\n"
 # Select installation profile
 echo -e "${YELLOW}[4/6] Select installation profile${NC}"
 echo "Available profiles:"
-echo "  1) Basic        - Core dependencies only (no vLLM, no reranker)"
-echo "  2) vLLM         - Include vLLM for LongRefiner (requires GPU)"
-echo "  3) Reranker     - Include FlagEmbedding for reranking models"
-echo "  4) Full         - All optional dependencies (vLLM + reranker)"
-echo "  5) Development  - Full + development tools (pytest, ruff, etc.)"
+echo "  1) Basic        - Core dependencies only"
+echo "  2) Full         - All optional dependencies (vLLM + reranker)"
+echo "  3) Development  - Full + development tools + benchmark dependencies"
 
-read -p "Choose profile [1-5] (default: 1): " profile
+read -p "Choose profile [1-3] (default: 1): " profile
 profile=${profile:-1}
 
 case $profile in
@@ -122,19 +141,11 @@ case $profile in
         PROFILE_NAME="Basic"
         ;;
     2)
-        INSTALL_CMD="pip install -e .[vllm]"
-        PROFILE_NAME="vLLM"
-        ;;
-    3)
-        INSTALL_CMD="pip install -e .[reranker]"
-        PROFILE_NAME="Reranker"
-        ;;
-    4)
         INSTALL_CMD="pip install -e .[full]"
         PROFILE_NAME="Full"
         ;;
-    5)
-        INSTALL_CMD="pip install -e .[full,dev]"
+    3)
+        INSTALL_CMD="pip install -e .[full,dev,benchmark]"
         PROFILE_NAME="Development"
         ;;
     *)
@@ -154,6 +165,33 @@ echo ""
 
 if $INSTALL_CMD; then
     echo -e "${GREEN}✓ Installation completed successfully${NC}\n"
+    
+    # Install SAGE packages in stages if benchmark profile is selected
+    if [[ $profile -eq 3 ]]; then
+        echo -e "${BLUE}"
+        echo "╔════════════════════════════════════════════════════════════════╗"
+        echo "║          Installing SAGE Packages (Staged Installation)       ║"
+        echo "╚════════════════════════════════════════════════════════════════╝"
+        echo -e "${NC}\n"
+        
+        echo -e "${YELLOW}步骤 1/4: 安装 L1 基础包 (isage-common[embedding])${NC}"
+        pip install --upgrade "isage-common[embedding]"
+        echo -e "${GREEN}✓ L1 基础包安装完成${NC}\n"
+        
+        echo -e "${YELLOW}步骤 2/4: 安装 L2-L3 平台&核心包 (isage-platform, isage-kernel, isage-libs)${NC}"
+        pip install --upgrade isage-platform isage-kernel isage-libs
+        echo -e "${GREEN}✓ L2-L3 平台&核心包安装完成${NC}\n"
+        
+        echo -e "${YELLOW}步骤 3/4: 安装 L4 中间件包 (isage-middleware)${NC}"
+        pip install --upgrade isage-middleware
+        echo -e "${GREEN}✓ L4 中间件包安装完成${NC}\n"
+        
+        echo -e "${YELLOW}步骤 4/4: 安装 L5-L6 上层包 (isage-vdb, isage-data)${NC}"
+        pip install --upgrade isage-vdb isage-data
+        echo -e "${GREEN}✓ L5-L6 上层包安装完成${NC}\n"
+        
+        echo -e "${GREEN}✓ 所有 SAGE 包安装完成${NC}\n"
+    fi
 else
     echo -e "${RED}✗ Installation failed${NC}"
     exit 1
@@ -180,8 +218,8 @@ echo ""
 
 # Show appropriate activation command only if not already in venv
 if [ "$IN_VENV" = false ] && [[ $create_venv =~ ^[Yy]$ ]]; then
-    echo "1. Activate the virtual environment:"
-    echo -e "   ${BLUE}source .venv/bin/activate${NC}"
+    echo "1. Activate the conda environment:"
+    echo -e "   ${BLUE}conda activate ${conda_env_name}${NC}"
     echo ""
     echo "2. Try a basic example:"
 else
@@ -208,8 +246,8 @@ echo ""
 echo "For more information, see README.md"
 echo ""
 
-# Optional: check GPU availability if vLLM profile was selected
-if [[ $profile -eq 2 || $profile -eq 4 || $profile -eq 5 ]]; then
+# Optional: check GPU availability if Full or Development profile was selected
+if [[ $profile -eq 2 || $profile -eq 3 ]]; then
     echo -e "${YELLOW}GPU Check:${NC}"
     if command -v nvidia-smi &> /dev/null; then
         echo "NVIDIA GPU detected:"
