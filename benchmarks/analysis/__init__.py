@@ -11,13 +11,13 @@
 - latex_export: LaTeX 表格导出
 """
 
-from sage.benchmark.benchmark_refiner.analysis.head_analysis import (
+from benchmarks.analysis.head_analysis import (
     AttentionHookExtractor,
     HeadwiseEvaluator,
     MetricsAggregator,
     mean_normalized_rank,
 )
-from sage.benchmark.benchmark_refiner.analysis.latex_export import (
+from benchmarks.analysis.latex_export import (
     TableConfig,
     export_all_tables,
     generate_ablation_table,
@@ -26,7 +26,7 @@ from sage.benchmark.benchmark_refiner.analysis.latex_export import (
     generate_main_results_table,
     generate_significance_table,
 )
-from sage.benchmark.benchmark_refiner.analysis.statistical import (
+from benchmarks.analysis.statistical import (
     SignificanceResult,
     TTestResult,
     bonferroni_correction,
@@ -38,7 +38,7 @@ from sage.benchmark.benchmark_refiner.analysis.statistical import (
     paired_t_test,
     wilcoxon_test,
 )
-from sage.benchmark.benchmark_refiner.analysis.visualization import (
+from benchmarks.analysis.visualization import (
     generate_visualization_report,
     plot_algorithm_comparison,
     plot_dataset_heatmap,

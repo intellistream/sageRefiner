@@ -7,7 +7,8 @@ LaTeX 导出模块单元测试
 
 import pytest
 
-from sage.benchmark.benchmark_refiner.analysis.latex_export import (
+
+from benchmarks.analysis.latex_export import (
     TableConfig,
     export_all_tables,
     generate_ablation_table,
@@ -16,7 +17,7 @@ from sage.benchmark.benchmark_refiner.analysis.latex_export import (
     generate_main_results_table,
     generate_significance_table,
 )
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     AlgorithmMetrics,
 )
 

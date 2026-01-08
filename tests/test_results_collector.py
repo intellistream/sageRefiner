@@ -15,7 +15,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from sage.benchmark.benchmark_refiner.experiments.results_collector import (
+from benchmarks.experiments.results_collector import (
     ResultsCollector,
     get_collector,
 )

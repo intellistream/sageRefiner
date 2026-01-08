@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     pass
 
 
-class LongLLMLinguaOperator(MapOperator):
+class LongLLMLinguaRefinerOperator(MapOperator):
     """LongLLMLingua Refiner Operator for SAGE Pipeline
 
     Applies LongLLMLingua compression algorithm in RAG pipelines to reduce

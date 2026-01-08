@@ -14,11 +14,11 @@ from pathlib import Path
 import yaml
 from datasets import load_dataset
 
-from sage.benchmark.benchmark_refiner.analysis.head_analysis import (
+from benchmarks.analysis.head_analysis import (
     AttentionHookExtractor,
     HeadwiseEvaluator,
 )
-from sage.benchmark.benchmark_refiner.analysis.visualization import plot_mnr_curve
+from benchmarks.analysis.visualization import plot_mnr_curve
 
 # 日志配置
 logging.basicConfig(

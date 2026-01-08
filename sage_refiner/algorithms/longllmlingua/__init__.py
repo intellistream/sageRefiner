@@ -25,8 +25,8 @@ __all__ = [
 
 # Optional: SAGE operator (only available inside SAGE framework)
 try:
-    from .operator import LongLLMLinguaOperator
+    from .operator import LongLLMLinguaRefinerOperator
 
-    __all__.append("LongLLMLinguaOperator")
+    __all__.append("LongLLMLinguaRefinerOperator")
 except ImportError:
-    LongLLMLinguaOperator = None
+    LongLLMLinguaRefinerOperator = None

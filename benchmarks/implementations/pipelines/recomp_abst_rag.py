@@ -21,16 +21,16 @@ from sage.common.utils.logging.custom_logger import CustomLogger
 from sage.kernel.api.local_environment import LocalEnvironment
 from sage.libs.foundation.io.batch import HFDatasetBatch
 
-# RECOMPAbstractiveOperator may not be available yet (depends on Task 2 completion)
+# RECOMPAbstractiveRefinerOperator may not be available yet (depends on Task 2 completion)
 try:
-    from sage_refiner.algorithms.recomp_abst import RECOMPAbstractiveOperator
+    from sage_refiner.algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
 
-    if RECOMPAbstractiveOperator is None:
-        raise ImportError("RECOMPAbstractiveOperator is None")
+    if RECOMPAbstractiveRefinerOperator is None:
+        raise ImportError("RECOMPAbstractiveRefinerOperator is None")
 except ImportError:
-    RECOMPAbstractiveOperator = None
+    RECOMPAbstractiveRefinerOperator = None
     print(
-        "⚠️  Warning: RECOMPAbstractiveOperator is not available yet.\n"
+        "⚠️  Warning: RECOMPAbstractiveRefinerOperator is not available yet.\n"
         "   Please ensure Task 2 (RECOMP Abstractive implementation) is completed first.\n"
         "   See: docs/dev-notes/l4-middleware/recomp-integration-tasks.md"
     )
@@ -55,7 +55,7 @@ def pipeline_run(config):
     (
         env.from_batch(HFDatasetBatch, config["source"])
         .map(Wiki18FAISSRetriever, config["retriever"], enable_profile=enable_profile)
-        .map(RECOMPAbstractiveOperator, config["recomp_abst"])  # RECOMP Abstractive压缩
+        .map(RECOMPAbstractiveRefinerOperator, config["recomp_abst"])  # RECOMP Abstractive压缩
         .map(QAPromptor, config["promptor"], enable_profile=enable_profile)
         .map(OpenAIGenerator, config["generator"]["vllm"], enable_profile=enable_profile)
         .map(F1Evaluate, config["evaluate"])
@@ -91,9 +91,9 @@ if __name__ == "__main__":
         print("✅ Test passed: Example structure validated")
         sys.exit(0)
 
-    # 检查 RECOMPAbstractiveOperator 是否可用
-    if RECOMPAbstractiveOperator is None:
-        print("❌ RECOMPAbstractiveOperator is not available.")
+    # 检查 RECOMPAbstractiveRefinerOperator 是否可用
+    if RECOMPAbstractiveRefinerOperator is None:
+        print("❌ RECOMPAbstractiveRefinerOperator is not available.")
         print("   Please complete Task 2 (RECOMP Abstractive implementation) first.")
         print("   See: docs/dev-notes/l4-middleware/recomp-integration-tasks.md")
         sys.exit(1)

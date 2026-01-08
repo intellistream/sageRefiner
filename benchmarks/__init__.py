@@ -36,7 +36,7 @@ CLI 使用:
     sage-refiner-bench sweep --algorithm longrefiner --budgets 512,1024,2048
 
 Python 使用:
-    from sage.benchmark.benchmark_refiner.experiments import (
+    from benchmarks.experiments import (
         RefinerExperimentRunner,
         RefinerExperimentConfig,
     )
@@ -64,7 +64,7 @@ Python 使用:
 __layer__ = "L5"
 
 # Analysis tools
-from sage.benchmark.benchmark_refiner.analysis import (
+from benchmarks.analysis import (
     AttentionHookExtractor,
     HeadwiseEvaluator,
     MetricsAggregator,
@@ -73,7 +73,7 @@ from sage.benchmark.benchmark_refiner.analysis import (
 )
 
 # Experiment framework
-from sage.benchmark.benchmark_refiner.experiments import (
+from benchmarks.experiments import (
     AlgorithmMetrics,
     BaseRefinerExperiment,
     ComparisonExperiment,

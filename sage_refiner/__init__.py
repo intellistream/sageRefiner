@@ -23,8 +23,19 @@ from ._version import __author__, __email__, __version__
 
 __license__ = "Apache-2.0"
 
+from .algorithms.llmlingua2 import LLMLingua2RefinerOperator
+from .algorithms.llmlingua2.compressor import LLMLingua2Compressor
+from .algorithms.longllmlingua import LongLLMLinguaRefinerOperator
+from .algorithms.longllmlingua.compressor import (
+    DEFAULT_LONG_LLMLINGUA_CONFIG,
+    LongLLMLinguaCompressor,
+)
 from .algorithms.LongRefiner.compressor import LongRefinerCompressor
 from .algorithms.provence.compressor import ProvenceCompressor
+from .algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
+from .algorithms.recomp_abst.compressor import RECOMPAbstractiveCompressor
+from .algorithms.recomp_extr import RECOMPExtractiveRefinerOperator
+from .algorithms.recomp_extr.compressor import RECOMPExtractiveCompressor
 from .algorithms.reform.compressor import REFORMCompressor
 from .config import RefinerAlgorithm, RefinerConfig
 
@@ -40,10 +51,21 @@ __all__ = [
     # Config
     "RefinerConfig",
     "RefinerAlgorithm",
-    # Algorithms
+    # Algorithms - Compressors
     "LongRefinerCompressor",
-    "REFORMCompressor",
+    "LLMLingua2Compressor",
+    "LongLLMLinguaCompressor",
     "ProvenceCompressor",
+    "RECOMPAbstractiveCompressor",
+    "RECOMPExtractiveCompressor",
+    "REFORMCompressor",
+    # Algorithms - Operators
+    "LLMLingua2RefinerOperator",
+    "LongLLMLinguaRefinerOperator",
+    "RECOMPAbstractiveRefinerOperator",
+    "RECOMPExtractiveRefinerOperator",
+    # Config constants
+    "DEFAULT_LONG_LLMLINGUA_CONFIG",
     # Aliases
     "LongRefiner",
     "ReformCompressor",

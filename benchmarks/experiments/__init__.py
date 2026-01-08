@@ -16,7 +16,7 @@ Refiner Experiments Module
 - MultiDatasetExperimentResult: 多数据集实验结果
 """
 
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     AVAILABLE_DATASETS,
     AlgorithmMetrics,
     BaseRefinerExperiment,
@@ -25,7 +25,7 @@ from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
     RefinerAlgorithm,
     RefinerExperimentConfig,
 )
-from sage.benchmark.benchmark_refiner.experiments.comparison_experiment import (
+from benchmarks.experiments.comparison_experiment import (
     ComparisonExperiment,
     CompressionExperiment,
     DatasetResult,
@@ -33,11 +33,11 @@ from sage.benchmark.benchmark_refiner.experiments.comparison_experiment import (
     MultiDatasetExperimentResult,
     QualityExperiment,
 )
-from sage.benchmark.benchmark_refiner.experiments.results_collector import (
+from benchmarks.experiments.results_collector import (
     ResultsCollector,
     get_collector,
 )
-from sage.benchmark.benchmark_refiner.experiments.runner import (
+from benchmarks.experiments.runner import (
     RefinerExperimentRunner,
 )
 

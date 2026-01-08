@@ -15,13 +15,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     AlgorithmMetrics,
     BaseRefinerExperiment,
     ExperimentResult,
     RefinerExperimentConfig,
 )
-from sage.benchmark.benchmark_refiner.experiments.results_collector import (
+from benchmarks.experiments.results_collector import (
     ResultsCollector,
 )
 from sage.common.utils.config.loader import load_config
@@ -525,27 +525,27 @@ class ComparisonExperiment(BaseRefinerExperiment):
 
         # 动态导入 Pipeline 模块
         if algorithm == "baseline":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.baseline_rag import (
+            from benchmarks.implementations.pipelines.baseline_rag import (
                 pipeline_run,
             )
         elif algorithm == "longrefiner":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.longrefiner_rag import (
+            from benchmarks.implementations.pipelines.longrefiner_rag import (
                 pipeline_run,
             )
         elif algorithm == "reform":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.reform_rag import (
+            from benchmarks.implementations.pipelines.reform_rag import (
                 pipeline_run,
             )
         elif algorithm == "provence":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.provence_rag import (
+            from benchmarks.implementations.pipelines.provence_rag import (
                 pipeline_run,
             )
         elif algorithm == "longllmlingua":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.longllmlingua_rag import (
+            from benchmarks.implementations.pipelines.longllmlingua_rag import (
                 pipeline_run,
             )
         elif algorithm == "llmlingua2":
-            from sage.benchmark.benchmark_refiner.implementations.pipelines.llmlingua2_rag import (
+            from benchmarks.implementations.pipelines.llmlingua2_rag import (
                 pipeline_run,
             )
 

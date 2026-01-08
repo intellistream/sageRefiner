@@ -278,38 +278,3 @@ class TestLongRefinerMocked:
                     assert "compressed_context" in r
 
 
-# =============================================================================
-# 集成测试（需要真实模型，默认跳过）
-# =============================================================================
-
-
-@pytest.mark.skip(reason="Requires model download and GPU/CPU resources")
-def test_long_refiner_initialization():
-    """Test LongRefiner initialization."""
-    config = RefinerConfig(
-        algorithm=RefinerAlgorithm.LONG_REFINER,
-        budget=256,
-        base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
-    )
-    refiner = LongRefinerCompressor(config.to_dict())
-    assert refiner is not None
-
-
-@pytest.mark.skip(reason="Requires model download and GPU/CPU resources")
-def test_long_refiner_compress(sample_query, sample_docs):
-    """Test LongRefiner compression."""
-    config = RefinerConfig(
-        algorithm=RefinerAlgorithm.LONG_REFINER,
-        budget=128,
-        base_model_path="Qwen/Qwen2.5-0.5B-Instruct",
-    )
-    refiner = LongRefinerCompressor(config.to_dict())
-
-    result = refiner.compress(
-        question=sample_query,
-        document_list=[{"contents": doc} for doc in sample_docs],
-        budget=128,
-    )
-
-    assert result is not None
-    assert "compressed_context" in result

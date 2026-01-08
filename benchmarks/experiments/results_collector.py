@@ -9,7 +9,7 @@ Results Collector for Refiner Benchmark
 此文件保留以保持向后兼容性。
 
 使用示例:
-    from sage.benchmark.benchmark_refiner.experiments.results_collector import ResultsCollector
+    from benchmarks.experiments.results_collector import ResultsCollector
 
     collector = ResultsCollector()
     collector.reset()

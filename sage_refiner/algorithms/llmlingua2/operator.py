@@ -21,8 +21,8 @@ from .compressor import LLMLingua2Compressor
 logger = logging.getLogger(__name__)
 
 
-class LLMLingua2Operator(MapOperator):
-    """LLMLingua-2 Operator for SAGE Pipeline.
+class LLMLingua2RefinerOperator(MapOperator):
+    """LLMLingua-2 Refiner Operator for SAGE Pipeline.
 
     This operator wraps the LLMLingua-2 compression algorithm for use in
     SAGE RAG pipelines. It uses BERT-based token classification for fast

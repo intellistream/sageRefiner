@@ -55,8 +55,8 @@ except ImportError:
 try:
     from .LongRefiner import LongRefinerOperator
     from .provence import ProvenceRefinerOperator
-    from .recomp_abst import RECOMPAbstractiveOperator
-    from .recomp_extr import RECOMPExtractiveOperator
+    from .recomp_abst import RECOMPAbstractiveRefinerOperator
+    from .recomp_extr import RECOMPExtractiveRefinerOperator
     from .reform import REFORMRefinerOperator
 
     __all__.extend(
@@ -64,8 +64,8 @@ try:
             "LongRefinerOperator",
             "REFORMRefinerOperator",
             "ProvenceRefinerOperator",
-            "RECOMPExtractiveOperator",
-            "RECOMPAbstractiveOperator",
+            "RECOMPExtractiveRefinerOperator",
+            "RECOMPAbstractiveRefinerOperator",
         ]
     )
 except ImportError:
@@ -73,21 +73,21 @@ except ImportError:
     LongRefinerOperator = None
     REFORMRefinerOperator = None
     ProvenceRefinerOperator = None
-    RECOMPExtractiveOperator = None
-    RECOMPAbstractiveOperator = None
+    RECOMPExtractiveRefinerOperator = None
+    RECOMPAbstractiveRefinerOperator = None
 
 # LongLLMLingua operator (requires SAGE framework + LLMLingua)
 try:
-    from .longllmlingua import LongLLMLinguaOperator
+    from .longllmlingua import LongLLMLinguaRefinerOperator
 
-    __all__.append("LongLLMLinguaOperator")
+    __all__.append("LongLLMLinguaRefinerOperator")
 except ImportError:
-    LongLLMLinguaOperator = None
+    LongLLMLinguaRefinerOperator = None
 
 # Optional: LLMLingua-2 operator (requires SAGE framework + LLMLingua)
 try:
-    from .llmlingua2 import LLMLingua2Operator
+    from .llmlingua2 import LLMLingua2RefinerOperator
 
-    __all__.append("LLMLingua2Operator")
+    __all__.append("LLMLingua2RefinerOperator")
 except ImportError:
-    LLMLingua2Operator = None
+    LLMLingua2RefinerOperator = None

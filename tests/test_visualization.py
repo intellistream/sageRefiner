@@ -8,7 +8,7 @@
 import matplotlib.pyplot as plt
 import pytest
 
-from sage.benchmark.benchmark_refiner.analysis.visualization import (
+from benchmarks.analysis.visualization import (
     ALGORITHM_COLORS,
     ALGORITHM_MARKERS,
     _compute_pareto_frontier,
@@ -21,7 +21,7 @@ from sage.benchmark.benchmark_refiner.analysis.visualization import (
     plot_pareto_frontier,
     plot_radar_chart,
 )
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     AlgorithmMetrics,
 )
 

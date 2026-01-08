@@ -17,7 +17,10 @@ from __future__ import annotations
 
 import tempfile
 
-from sage.benchmark.benchmark_refiner.experiments import (
+import pytest
+
+
+from benchmarks.experiments import (
     AlgorithmMetrics,
     ComparisonExperiment,
     CompressionExperiment,

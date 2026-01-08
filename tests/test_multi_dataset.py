@@ -20,7 +20,7 @@ import tempfile
 from typing import Any
 from unittest.mock import patch
 
-from sage.benchmark.benchmark_refiner.experiments import (
+from benchmarks.experiments import (
     AVAILABLE_DATASETS,
     AlgorithmMetrics,
     ComparisonExperiment,

@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+    from benchmarks.experiments.base_experiment import (
         AlgorithmMetrics,
     )
 

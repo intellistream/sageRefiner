@@ -15,7 +15,7 @@ from .compressor import RECOMPAbstractiveCompressor
 logger = logging.getLogger(__name__)
 
 
-class RECOMPAbstractiveOperator(MapOperator):
+class RECOMPAbstractiveRefinerOperator(MapOperator):
     """RECOMP Abstractive Refiner 算子
 
     在 RAG pipeline 中使用 RECOMP Abstractive 算法压缩检索到的上下文。

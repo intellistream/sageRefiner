@@ -18,7 +18,8 @@ from unittest.mock import patch
 
 import pytest
 
-from sage.benchmark.benchmark_refiner.cli import (
+
+from benchmarks.cli import (
     cmd_config,
     create_parser,
     main,

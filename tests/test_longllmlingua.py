@@ -6,7 +6,7 @@ Unit tests for LongLLMLingua integration.
 
 Tests cover:
 - LongLLMLinguaCompressor import and structure
-- LongLLMLinguaOperator import and structure
+- LongLLMLinguaRefinerOperator import and structure
 - Default configuration validation
 - Mock compression functionality
 """
@@ -21,26 +21,26 @@ class TestLongLLMLinguaImports:
 
     def test_import_from_algorithms(self) -> None:
         """Test importing from algorithms submodule."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             DEFAULT_LONG_LLMLINGUA_CONFIG,
             LongLLMLinguaCompressor,
-            LongLLMLinguaOperator,
+            LongLLMLinguaRefinerOperator,
         )
 
         assert LongLLMLinguaCompressor is not None
-        assert LongLLMLinguaOperator is not None
+        assert LongLLMLinguaRefinerOperator is not None
         assert DEFAULT_LONG_LLMLINGUA_CONFIG is not None
 
     def test_import_from_main_module(self) -> None:
         """Test importing from main sage_refiner module."""
-        from sage.middleware.components.sage_refiner import (
+        from sage_refiner import (
             DEFAULT_LONG_LLMLINGUA_CONFIG,
             LongLLMLinguaCompressor,
-            LongLLMLinguaOperator,
+            LongLLMLinguaRefinerOperator,
         )
 
         assert LongLLMLinguaCompressor is not None
-        assert LongLLMLinguaOperator is not None
+        assert LongLLMLinguaRefinerOperator is not None
         assert DEFAULT_LONG_LLMLINGUA_CONFIG is not None
 
 
@@ -49,7 +49,7 @@ class TestLongLLMLinguaConfig:
 
     def test_default_config_values(self) -> None:
         """Test that default config matches paper baseline."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             DEFAULT_LONG_LLMLINGUA_CONFIG,
         )
 
@@ -61,7 +61,7 @@ class TestLongLLMLinguaConfig:
 
     def test_default_config_has_required_keys(self) -> None:
         """Test that default config has all required keys."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             DEFAULT_LONG_LLMLINGUA_CONFIG,
         )
 
@@ -82,7 +82,7 @@ class TestLongLLMLinguaCompressor:
 
     def test_compressor_class_exists(self) -> None:
         """Test that LongLLMLinguaCompressor class exists and has expected attributes."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             LongLLMLinguaCompressor,
         )
 
@@ -91,7 +91,7 @@ class TestLongLLMLinguaCompressor:
 
     def test_compressor_default_model(self) -> None:
         """Test that DEFAULT_MODEL is set correctly."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             LongLLMLinguaCompressor,
         )
 
@@ -99,7 +99,7 @@ class TestLongLLMLinguaCompressor:
 
     def test_compressor_initialization_no_model_load(self) -> None:
         """Test compressor initialization without loading model (lazy init)."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
+        from sage_refiner.algorithms.longllmlingua import (
             LongLLMLinguaCompressor,
         )
 
@@ -116,25 +116,25 @@ class TestLongLLMLinguaCompressor:
         assert compressor.device == "cpu"
 
 
-class TestLongLLMLinguaOperator:
-    """Tests for LongLLMLinguaOperator class."""
+class TestLongLLMLinguaRefinerOperator:
+    """Tests for LongLLMLinguaRefinerOperator class."""
 
     def test_operator_class_exists(self) -> None:
-        """Test that LongLLMLinguaOperator class exists."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
-            LongLLMLinguaOperator,
+        """Test that LongLLMLinguaRefinerOperator class exists."""
+        from sage_refiner.algorithms.longllmlingua import (
+            LongLLMLinguaRefinerOperator,
         )
 
-        assert LongLLMLinguaOperator is not None
+        assert LongLLMLinguaRefinerOperator is not None
 
     def test_operator_has_execute_method(self) -> None:
-        """Test that LongLLMLinguaOperator has execute method (SAGE MapOperator interface)."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.longllmlingua import (
-            LongLLMLinguaOperator,
+        """Test that LongLLMLinguaRefinerOperator has execute method (SAGE MapOperator interface)."""
+        from sage_refiner.algorithms.longllmlingua import (
+            LongLLMLinguaRefinerOperator,
         )
 
         # Check it has the execute method (SAGE MapOperator interface)
-        assert hasattr(LongLLMLinguaOperator, "execute")
+        assert hasattr(LongLLMLinguaRefinerOperator, "execute")
 
 
 class TestLongLLMLinguaInRefinerAlgorithm:
@@ -142,14 +142,14 @@ class TestLongLLMLinguaInRefinerAlgorithm:
 
     def test_longllmlingua_in_enum(self) -> None:
         """Test that LONGLLMLINGUA is in RefinerAlgorithm enum."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         assert hasattr(RefinerAlgorithm, "LONGLLMLINGUA")
         assert RefinerAlgorithm.LONGLLMLINGUA.value == "longllmlingua"
 
     def test_longllmlingua_in_available(self) -> None:
         """Test that longllmlingua is in available algorithms."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         available = RefinerAlgorithm.available()
         assert "longllmlingua" in available
@@ -165,7 +165,7 @@ class TestLongLLMLinguaPipelineStructure:
             import importlib.util
 
             spec = importlib.util.find_spec(
-                "sage.benchmark.benchmark_refiner.implementations.pipelines.longllmlingua_rag"
+                "benchmarks.implementations.pipelines.longllmlingua_rag"
             )
             assert spec is not None
         except ModuleNotFoundError:
@@ -176,14 +176,11 @@ class TestLongLLMLinguaPipelineStructure:
         from pathlib import Path
 
         config_path = (
-            Path(__file__).parent.parent.parent
-            / "src"
-            / "sage"
-            / "benchmark"
-            / "benchmark_refiner"
+            Path(__file__).parent.parent
+            / "benchmarks"
             / "config"
             / "config_longllmlingua.yaml"
         )
 
-        # Check relative to benchmark_refiner package
+        # Check relative to benchmarks directory
         assert config_path.exists(), f"Config file not found at {config_path}"

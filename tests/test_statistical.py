@@ -2,7 +2,7 @@
 统计检验模块单元测试
 ===================
 
-测试 sage.benchmark.benchmark_refiner.analysis.statistical 模块
+测试 benchmarks.analysis.statistical 模块
 """
 
 import math
@@ -10,7 +10,7 @@ import math
 import numpy as np
 import pytest
 
-from sage.benchmark.benchmark_refiner.analysis.statistical import (
+from benchmarks.analysis.statistical import (
     TTestResult,
     bonferroni_correction,
     bootstrap_confidence_interval,

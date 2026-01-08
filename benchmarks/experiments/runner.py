@@ -9,11 +9,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     ExperimentResult,
     RefinerExperimentConfig,
 )
-from sage.benchmark.benchmark_refiner.experiments.comparison_experiment import (
+from benchmarks.experiments.comparison_experiment import (
     ComparisonExperiment,
     CompressionExperiment,
     LatencyExperiment,
@@ -312,7 +312,7 @@ class RefinerExperimentRunner:
         Args:
             result: 多数据集实验结果
         """
-        from sage.benchmark.benchmark_refiner.experiments.comparison_experiment import (
+        from benchmarks.experiments.comparison_experiment import (
             MultiDatasetExperimentResult,
         )
 

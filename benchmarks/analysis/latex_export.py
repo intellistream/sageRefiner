@@ -24,12 +24,12 @@ from typing import Any
 
 import numpy as np
 
-from sage.benchmark.benchmark_refiner.analysis.statistical import (
+from benchmarks.analysis.statistical import (
     bootstrap_confidence_interval,
     cohens_d,
     paired_t_test,
 )
-from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+from benchmarks.experiments.base_experiment import (
     AlgorithmMetrics,
 )
 

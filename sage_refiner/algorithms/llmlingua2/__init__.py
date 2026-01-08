@@ -28,8 +28,8 @@ __all__ = [
 
 # Optional: SAGE operator (only available inside SAGE framework)
 try:
-    from .operator import LLMLingua2Operator
+    from .operator import LLMLingua2RefinerOperator
 
-    __all__.append("LLMLingua2Operator")
+    __all__.append("LLMLingua2RefinerOperator")
 except ImportError:
-    LLMLingua2Operator = None
+    LLMLingua2RefinerOperator = None

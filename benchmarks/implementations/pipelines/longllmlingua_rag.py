@@ -30,7 +30,7 @@ from sage.common.utils.config.loader import load_config
 from sage.common.utils.logging.custom_logger import CustomLogger
 from sage.kernel.api.local_environment import LocalEnvironment
 from sage.libs.foundation.io.batch import HFDatasetBatch
-from sage_refiner.algorithms.longllmlingua import LongLLMLinguaOperator
+from sage_refiner.algorithms.longllmlingua import LongLLMLinguaRefinerOperator
 from sage.middleware.operators.rag import (
     CompressionRateEvaluate,
     F1Evaluate,
@@ -51,7 +51,7 @@ def pipeline_run(config):
     (
         env.from_batch(HFDatasetBatch, config["source"])
         .map(Wiki18FAISSRetriever, config["retriever"], enable_profile=enable_profile)
-        .map(LongLLMLinguaOperator, config["longllmlingua"])
+        .map(LongLLMLinguaRefinerOperator, config["longllmlingua"])
         .map(QAPromptor, config["promptor"], enable_profile=enable_profile)
         .map(OpenAIGenerator, config["generator"]["vllm"], enable_profile=enable_profile)
         .map(F1Evaluate, config["evaluate"])

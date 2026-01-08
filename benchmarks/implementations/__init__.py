@@ -14,12 +14,12 @@ Benchmark Refiner Implementations
 
 运行方式:
     # 直接运行
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.baseline_rag
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.longrefiner_rag
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.reform_rag
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.provence_rag
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.llmlingua2_rag
-    python -m sage.benchmark.benchmark_refiner.implementations.pipelines.longllmlingua_rag
+    python -m benchmarks.implementations.pipelines.baseline_rag
+    python -m benchmarks.implementations.pipelines.longrefiner_rag
+    python -m benchmarks.implementations.pipelines.reform_rag
+    python -m benchmarks.implementations.pipelines.provence_rag
+    python -m benchmarks.implementations.pipelines.llmlingua2_rag
+    python -m benchmarks.implementations.pipelines.longllmlingua_rag
 
 配置文件:
     各Pipeline对应的配置文件位于 ../config/ 目录

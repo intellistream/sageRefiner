@@ -300,10 +300,10 @@ Examples:
 
 def cmd_compare(args: argparse.Namespace) -> int:
     """Run algorithm comparison."""
-    from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+    from benchmarks.experiments.base_experiment import (
         AVAILABLE_DATASETS,
     )
-    from sage.benchmark.benchmark_refiner.experiments.runner import (
+    from benchmarks.experiments.runner import (
         RefinerExperimentRunner,
     )
 
@@ -351,7 +351,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     """Run experiment from config."""
-    from sage.benchmark.benchmark_refiner.experiments.runner import (
+    from benchmarks.experiments.runner import (
         RefinerExperimentRunner,
     )
 
@@ -375,7 +375,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def cmd_sweep(args: argparse.Namespace) -> int:
     """Run budget sweep."""
-    from sage.benchmark.benchmark_refiner.experiments.runner import (
+    from benchmarks.experiments.runner import (
         RefinerExperimentRunner,
     )
 
@@ -415,7 +415,7 @@ def cmd_sweep(args: argparse.Namespace) -> int:
 
 def cmd_config(args: argparse.Namespace) -> int:
     """Generate example config."""
-    from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+    from benchmarks.experiments.base_experiment import (
         RefinerExperimentConfig,
     )
 
@@ -442,7 +442,7 @@ def cmd_heads(args: argparse.Namespace) -> int:
     cmd = [
         sys.executable,
         "-m",
-        "sage.benchmark.benchmark_refiner.analysis.find_heads",
+        "benchmarks.analysis.find_heads",
     ]
 
     if args.config:
@@ -482,12 +482,12 @@ def cmd_report(args: argparse.Namespace) -> int:
     """Generate LaTeX tables from experiment results."""
     import json
 
-    from sage.benchmark.benchmark_refiner.analysis.latex_export import (
+    from benchmarks.analysis.latex_export import (
         generate_latency_breakdown_table,
         generate_main_results_table,
         generate_significance_table,
     )
-    from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+    from benchmarks.experiments.base_experiment import (
         AlgorithmMetrics,
     )
 
@@ -585,7 +585,7 @@ def cmd_report(args: argparse.Namespace) -> int:
 
     if args.format in ("markdown", "both"):
         # 生成 Markdown 格式的报告
-        from sage.benchmark.benchmark_refiner.analysis.statistical import (
+        from benchmarks.analysis.statistical import (
             generate_significance_report,
         )
 
@@ -611,7 +611,7 @@ def cmd_report(args: argparse.Namespace) -> int:
 
 def _dict_to_algorithm_metrics(name: str, data: dict[str, Any]):
     """将字典转换为 AlgorithmMetrics 对象"""
-    from sage.benchmark.benchmark_refiner.experiments.base_experiment import (
+    from benchmarks.experiments.base_experiment import (
         AlgorithmMetrics,
     )
 

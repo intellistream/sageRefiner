@@ -330,46 +330,4 @@ class TestREFORMMocked:
         assert count > 0
 
 
-# =============================================================================
-# 集成测试（需要真实模型，默认跳过）
-# =============================================================================
 
-
-@pytest.mark.skip(reason="Requires model download and resources")
-def test_reform_initialization():
-    """Test REFORM initialization with real model."""
-    from sage_refiner.algorithms.reform import AttentionHookExtractor
-
-    extractor = AttentionHookExtractor("meta-llama/Llama-3.2-1B-Instruct")
-    selected_heads = [{"layer": 0, "head": 0, "type": "Q"}]
-
-    compressor = REFORMCompressor(
-        model_extractor=extractor,
-        selected_heads=selected_heads,
-    )
-    assert compressor is not None
-
-
-@pytest.mark.skip(reason="Requires model download and resources")
-def test_reform_compress(sample_query, sample_docs):
-    """Test REFORM compression with real model."""
-    from sage_refiner.algorithms.reform import AttentionHookExtractor
-
-    extractor = AttentionHookExtractor("meta-llama/Llama-3.2-1B-Instruct")
-    selected_heads = [
-        {"layer": 0, "head": 0, "type": "Q"},
-        {"layer": 1, "head": 1, "type": "K"},
-    ]
-
-    compressor = REFORMCompressor(
-        model_extractor=extractor,
-        selected_heads=selected_heads,
-        max_tokens=100,
-    )
-
-    context = "\n\n".join(sample_docs)
-    result = compressor.compress(context=context, question=sample_query)
-
-    assert result is not None
-    assert "compressed_context" in result
-    assert result["compressed_tokens"] <= result["original_tokens"]

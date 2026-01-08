@@ -21,23 +21,23 @@ class TestLLMLingua2Imports:
 
     def test_import_from_algorithms(self) -> None:
         """Test importing from algorithms submodule."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
+        from sage_refiner.algorithms.llmlingua2 import (
             LLMLingua2Compressor,
-            LLMLingua2Operator,
+            LLMLingua2RefinerOperator,
         )
 
         assert LLMLingua2Compressor is not None
-        assert LLMLingua2Operator is not None
+        assert LLMLingua2RefinerOperator is not None
 
     def test_import_from_main_module(self) -> None:
         """Test importing from main sage_refiner module."""
-        from sage.middleware.components.sage_refiner import (
+        from sage_refiner import (
             LLMLingua2Compressor,
-            LLMLingua2Operator,
+            LLMLingua2RefinerOperator,
         )
 
         assert LLMLingua2Compressor is not None
-        assert LLMLingua2Operator is not None
+        assert LLMLingua2RefinerOperator is not None
 
 
 class TestLLMLingua2Compressor:
@@ -45,7 +45,7 @@ class TestLLMLingua2Compressor:
 
     def test_compressor_class_exists(self) -> None:
         """Test that LLMLingua2Compressor class exists and has expected attributes."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
+        from sage_refiner.algorithms.llmlingua2 import (
             LLMLingua2Compressor,
         )
 
@@ -54,7 +54,7 @@ class TestLLMLingua2Compressor:
 
     def test_default_model_constant(self) -> None:
         """Test that DEFAULT_MODEL is correctly set."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
+        from sage_refiner.algorithms.llmlingua2 import (
             LLMLingua2Compressor,
         )
 
@@ -63,7 +63,7 @@ class TestLLMLingua2Compressor:
 
     def test_compressor_initialization_no_model_load(self) -> None:
         """Test compressor initialization without loading model (lazy init)."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
+        from sage_refiner.algorithms.llmlingua2 import (
             LLMLingua2Compressor,
         )
 
@@ -77,7 +77,7 @@ class TestLLMLingua2Compressor:
 
     def test_compressor_custom_model_attribute(self) -> None:
         """Test compressor with custom model (without loading)."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
+        from sage_refiner.algorithms.llmlingua2 import (
             LLMLingua2Compressor,
         )
 
@@ -88,25 +88,25 @@ class TestLLMLingua2Compressor:
         assert compressor.device == "cuda"
 
 
-class TestLLMLingua2Operator:
-    """Tests for LLMLingua2Operator class."""
+class TestLLMLingua2RefinerOperator:
+    """Tests for LLMLingua2RefinerOperator class."""
 
     def test_operator_class_exists(self) -> None:
-        """Test that LLMLingua2Operator class exists."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
-            LLMLingua2Operator,
+        """Test that LLMLingua2RefinerOperator class exists."""
+        from sage_refiner.algorithms.llmlingua2 import (
+            LLMLingua2RefinerOperator,
         )
 
-        assert LLMLingua2Operator is not None
+        assert LLMLingua2RefinerOperator is not None
 
     def test_operator_has_execute_method(self) -> None:
-        """Test that LLMLingua2Operator has execute method (SAGE MapOperator interface)."""
-        from sage.middleware.components.sage_refiner.sageRefiner.sage_refiner.algorithms.llmlingua2 import (
-            LLMLingua2Operator,
+        """Test that LLMLingua2RefinerOperator has execute method (SAGE MapOperator interface)."""
+        from sage_refiner.algorithms.llmlingua2 import (
+            LLMLingua2RefinerOperator,
         )
 
         # Check it has the execute method (SAGE MapOperator interface)
-        assert hasattr(LLMLingua2Operator, "execute")
+        assert hasattr(LLMLingua2RefinerOperator, "execute")
 
 
 class TestLLMLingua2InRefinerAlgorithm:
@@ -114,14 +114,14 @@ class TestLLMLingua2InRefinerAlgorithm:
 
     def test_llmlingua2_in_enum(self) -> None:
         """Test that LLMLINGUA2 is in RefinerAlgorithm enum."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         assert hasattr(RefinerAlgorithm, "LLMLINGUA2")
         assert RefinerAlgorithm.LLMLINGUA2.value == "llmlingua2"
 
     def test_llmlingua2_in_available(self) -> None:
         """Test that llmlingua2 is in available algorithms."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         available = RefinerAlgorithm.available()
         assert "llmlingua2" in available
@@ -136,7 +136,7 @@ class TestLLMLingua2PipelineStructure:
             import importlib.util
 
             spec = importlib.util.find_spec(
-                "sage.benchmark.benchmark_refiner.implementations.pipelines.llmlingua2_rag"
+                "benchmarks.implementations.pipelines.llmlingua2_rag"
             )
             assert spec is not None
         except ModuleNotFoundError:
@@ -153,7 +153,7 @@ class TestLLMLingua2VsLongLLMLingua:
 
     def test_both_available(self) -> None:
         """Test that both algorithms are available."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         available = RefinerAlgorithm.available()
         assert "llmlingua2" in available
@@ -161,13 +161,13 @@ class TestLLMLingua2VsLongLLMLingua:
 
     def test_different_enum_values(self) -> None:
         """Test that enum values are different."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         assert RefinerAlgorithm.LLMLINGUA2.value != RefinerAlgorithm.LONGLLMLINGUA.value
 
     def test_old_llmlingua_removed(self) -> None:
         """Test that old llmlingua (without version) is removed."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         available = RefinerAlgorithm.available()
         # Old "llmlingua" should not be in available
@@ -175,7 +175,7 @@ class TestLLMLingua2VsLongLLMLingua:
 
     def test_adaptive_removed(self) -> None:
         """Test that adaptive algorithm is removed."""
-        from sage.benchmark.benchmark_refiner.experiments import RefinerAlgorithm
+        from benchmarks.experiments import RefinerAlgorithm
 
         available = RefinerAlgorithm.available()
         assert "adaptive" not in available

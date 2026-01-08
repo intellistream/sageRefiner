@@ -27,8 +27,8 @@ __all__ = [
 
 # Optional: SAGE operator (only available inside SAGE framework)
 try:
-    from .operator import RECOMPExtractiveOperator
+    from .operator import RECOMPExtractiveRefinerOperator
 
-    __all__.append("RECOMPExtractiveOperator")
+    __all__.append("RECOMPExtractiveRefinerOperator")
 except ImportError:
-    RECOMPExtractiveOperator = None
+    RECOMPExtractiveRefinerOperator = None
