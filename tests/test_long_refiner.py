@@ -15,7 +15,6 @@ import pytest
 from sage_refiner import LongRefinerCompressor, RefinerConfig
 from sage_refiner.config import RefinerAlgorithm
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================
@@ -150,9 +149,7 @@ class TestLongRefinerMocked:
         return model
 
     @patch("sage_refiner.algorithms.LongRefiner.compressor.AutoTokenizer")
-    @patch(
-        "sage_refiner.algorithms.LongRefiner.compressor.AutoModelForSequenceClassification"
-    )
+    @patch("sage_refiner.algorithms.LongRefiner.compressor.AutoModelForSequenceClassification")
     def test_compress_returns_expected_structure(
         self,
         mock_auto_model,
@@ -180,9 +177,7 @@ class TestLongRefinerMocked:
                 compressor.tokenizer = mock_tokenizer
                 compressor.score_model = mock_score_model
                 compressor.score_tokenizer = mock_tokenizer
-                compressor.local_score_func = MagicMock(
-                    return_value=[0.5] * 10
-                )  # Mock scores
+                compressor.local_score_func = MagicMock(return_value=[0.5] * 10)  # Mock scores
                 compressor.step_to_config = {
                     "query_analysis": {
                         "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
@@ -216,9 +211,7 @@ class TestLongRefinerMocked:
                         ]
                     ]
                 )
-                compressor.run_all_search = MagicMock(
-                    return_value=[["Compressed content here"]]
-                )
+                compressor.run_all_search = MagicMock(return_value=[["Compressed content here"]])
 
                 # Test compress
                 result = compressor.compress(
@@ -256,9 +249,7 @@ class TestLongRefinerMocked:
                         [{"title": "D2", "abstract": ["a2"], "sections": {}}],
                     ]
                 )
-                compressor.run_all_search = MagicMock(
-                    return_value=[["Content 1"], ["Content 2"]]
-                )
+                compressor.run_all_search = MagicMock(return_value=[["Content 1"], ["Content 2"]])
 
                 # Test
                 questions = ["Q1?", "Q2?"]
@@ -276,5 +267,3 @@ class TestLongRefinerMocked:
                 assert len(results) == 2
                 for r in results:
                     assert "compressed_context" in r
-
-

@@ -106,9 +106,9 @@ def _get_significance_marker(p_value: float | None) -> str:
         return ""
     if p_value < 0.001:
         return "$^{***}$"
-    elif p_value < 0.01:
+    if p_value < 0.01:
         return "$^{**}$"
-    elif p_value < 0.05:
+    if p_value < 0.05:
         return "$^{*}$"
     return ""
 
@@ -640,12 +640,11 @@ def _format_p_value_latex(p: float) -> str:
     """格式化 p 值为 LaTeX"""
     if p < 0.001:
         return "$<$0.001$^{***}$"
-    elif p < 0.01:
+    if p < 0.01:
         return f"{p:.3f}$^{{**}}$"
-    elif p < 0.05:
+    if p < 0.05:
         return f"{p:.3f}$^{{*}}$"
-    else:
-        return f"{p:.3f}"
+    return f"{p:.3f}"
 
 
 def _interpret_effect_size(d: float) -> str:
@@ -653,12 +652,11 @@ def _interpret_effect_size(d: float) -> str:
     abs_d = abs(d)
     if abs_d < 0.2:
         return "negligible"
-    elif abs_d < 0.5:
+    if abs_d < 0.5:
         return "small"
-    elif abs_d < 0.8:
+    if abs_d < 0.8:
         return "medium"
-    else:
-        return "large"
+    return "large"
 
 
 def generate_case_study_table(

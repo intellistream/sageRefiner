@@ -23,8 +23,16 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo "📦 Installing dependencies..."
           python -m pip install --upgrade pip
-          pip install -e ".[test]"
+          pip install pyyaml
+          
+          # Use quickstart.sh to install SAGE ecosystem (dev mode)
+          echo "📦 Installing SAGE ecosystem using quickstart.sh..."
+          chmod +x ./quickstart.sh
+          ./quickstart.sh --dev --yes --no-sync-submodules
+          
+          echo "✅ All packages installed successfully"
 
       - name: Run tests
         run: |

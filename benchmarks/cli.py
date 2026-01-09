@@ -344,9 +344,8 @@ def cmd_compare(args: argparse.Namespace) -> int:
         runner.print_comparison_table(result)
         print(f"\n✅ Results saved to: {args.output}")
         return 0
-    else:
-        print(f"\n❌ Experiment failed: {result.error}")
-        return 1
+    print(f"\n❌ Experiment failed: {result.error}")
+    return 1
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -368,9 +367,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     if result.success:
         runner.print_comparison_table(result)
         return 0
-    else:
-        print(f"\n❌ Experiment failed: {result.error}")
-        return 1
+    print(f"\n❌ Experiment failed: {result.error}")
+    return 1
 
 
 def cmd_sweep(args: argparse.Namespace) -> int:
@@ -669,9 +667,8 @@ def main() -> int:
     handler = commands.get(args.command)
     if handler:
         return handler(args)
-    else:
-        parser.print_help()
-        return 1
+    parser.print_help()
+    return 1
 
 
 if __name__ == "__main__":

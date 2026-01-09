@@ -21,7 +21,6 @@ from sage.common.utils.config.loader import load_config
 from sage.common.utils.logging.custom_logger import CustomLogger
 from sage.kernel.api.local_environment import LocalEnvironment
 from sage.libs.foundation.io.batch import HFDatasetBatch
-from sage_refiner.algorithms.recomp_extr import RECOMPExtractiveRefinerOperator
 from sage.middleware.operators.rag import (
     CompressionRateEvaluate,
     F1Evaluate,
@@ -31,6 +30,8 @@ from sage.middleware.operators.rag import (
     TokenCountEvaluate,
     Wiki18FAISSRetriever,
 )
+
+from sage_refiner.algorithms.recomp_extr import RECOMPExtractiveRefinerOperator
 
 
 def pipeline_run(config):

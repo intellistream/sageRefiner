@@ -7,7 +7,6 @@ LaTeX 导出模块单元测试
 
 import pytest
 
-
 from benchmarks.analysis.latex_export import (
     TableConfig,
     export_all_tables,

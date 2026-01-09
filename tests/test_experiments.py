@@ -17,9 +17,6 @@ from __future__ import annotations
 
 import tempfile
 
-import pytest
-
-
 from benchmarks.experiments import (
     AlgorithmMetrics,
     ComparisonExperiment,
