@@ -176,10 +176,7 @@ class TestLongLLMLinguaPipelineStructure:
         from pathlib import Path
 
         config_path = (
-            Path(__file__).parent.parent
-            / "benchmarks"
-            / "config"
-            / "config_longllmlingua.yaml"
+            Path(__file__).parent.parent / "benchmarks" / "config" / "config_longllmlingua.yaml"
         )
 
         # Check relative to benchmarks directory

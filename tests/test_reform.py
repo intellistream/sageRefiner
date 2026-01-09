@@ -8,14 +8,13 @@ Tests for REFORM Algorithm
 3. 集成测试（需要模型，标记为 skip）
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import torch
 
 from sage_refiner import RefinerConfig, REFORMCompressor
 from sage_refiner.config import RefinerAlgorithm
-
 
 # =============================================================================
 # Fixtures
@@ -328,6 +327,3 @@ class TestREFORMMocked:
 
         assert text is not None
         assert count > 0
-
-
-

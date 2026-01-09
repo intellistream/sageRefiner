@@ -59,7 +59,7 @@ class TestLLMLingua2Compressor:
         )
 
         expected_model = "microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank"
-        assert LLMLingua2Compressor.DEFAULT_MODEL == expected_model
+        assert expected_model == LLMLingua2Compressor.DEFAULT_MODEL
 
     def test_compressor_initialization_no_model_load(self) -> None:
         """Test compressor initialization without loading model (lazy init)."""
@@ -135,9 +135,7 @@ class TestLLMLingua2PipelineStructure:
         try:
             import importlib.util
 
-            spec = importlib.util.find_spec(
-                "benchmarks.implementations.pipelines.llmlingua2_rag"
-            )
+            spec = importlib.util.find_spec("benchmarks.implementations.pipelines.llmlingua2_rag")
             assert spec is not None
         except ModuleNotFoundError:
             pytest.skip("Pipeline module not found in path")

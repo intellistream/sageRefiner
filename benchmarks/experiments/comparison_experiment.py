@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from sage.common.utils.config.loader import load_config
+
 from benchmarks.experiments.base_experiment import (
     AlgorithmMetrics,
     BaseRefinerExperiment,
@@ -24,7 +26,6 @@ from benchmarks.experiments.base_experiment import (
 from benchmarks.experiments.results_collector import (
     ResultsCollector,
 )
-from sage.common.utils.config.loader import load_config
 
 
 @dataclass

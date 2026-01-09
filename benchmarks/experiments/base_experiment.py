@@ -363,7 +363,6 @@ class BaseRefinerExperiment(ABC):
         Returns:
             ExperimentResult 包含所有算法的评测结果
         """
-        pass
 
     def analyze(self, result: ExperimentResult) -> ExperimentResult:
         """

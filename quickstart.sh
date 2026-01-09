@@ -12,6 +12,44 @@ NC='\033[0m' # No Color
 PROJECT_NAME="sageRefiner"
 MIN_PYTHON_VERSION="3.11"
 
+# Default options
+AUTO_YES=false
+DEV_MODE=false
+NO_SYNC_SUBMODULES=false
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --yes|-y)
+            AUTO_YES=true
+            shift
+            ;;
+        --dev)
+            DEV_MODE=true
+            shift
+            ;;
+        --no-sync-submodules)
+            NO_SYNC_SUBMODULES=true
+            shift
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --yes, -y              Auto-confirm all prompts (non-interactive mode)"
+            echo "  --dev                  Install development profile with SAGE packages"
+            echo "  --no-sync-submodules   Skip submodule synchronization"
+            echo "  --help, -h             Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 echo -e "${BLUE}"
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║                   sageRefiner Quick Start                      ║"
@@ -64,8 +102,13 @@ elif [ -n "$VIRTUAL_ENV" ]; then
 fi
 
 if [ "$IN_VENV" = true ]; then
-    read -p "Create a new conda environment? [y/N]: " create_new
-    create_new=${create_new:-N}
+    if [ "$AUTO_YES" = true ]; then
+        # In auto-yes mode, use existing environment
+        create_new="N"
+    else
+        read -p "Create a new conda environment? [y/N]: " create_new
+        create_new=${create_new:-N}
+    fi
     
     if [[ $create_new =~ ^[Yy]$ ]]; then
         # Proceed to create new conda environment
@@ -79,25 +122,41 @@ fi
 if [ "$IN_VENV" = false ]; then
     # Check if conda is available
     if ! command -v conda &> /dev/null; then
-        echo -e "${RED}Error: conda is not installed or not in PATH${NC}"
-        echo "Please install Miniconda or Anaconda first"
-        echo "Visit: https://docs.conda.io/en/latest/miniconda.html"
-        exit 1
-    fi
+        if [ "$AUTO_YES" = true ]; then
+            echo -e "${YELLOW}Warning: conda not available in CI, skipping conda environment creation${NC}"
+            echo "Proceeding with system Python..."
+        else
+            echo -e "${RED}Error: conda is not installed or not in PATH${NC}"
+            echo "Please install Miniconda or Anaconda first"
+            echo "Visit: https://docs.conda.io/en/latest/miniconda.html"
+            exit 1
+        fi
+    else
+        # Ask about conda environment creation
+        if [ "$AUTO_YES" = true ]; then
+            create_venv="N"  # In CI, skip conda environment creation
+        else
+            read -p "Create a new conda environment? (recommended) [Y/n]: " create_venv
+            create_venv=${create_venv:-Y}
+        fi
 
-    # Ask about conda environment creation
-    read -p "Create a new conda environment? (recommended) [Y/n]: " create_venv
-    create_venv=${create_venv:-Y}
+        if [[ $create_venv =~ ^[Yy]$ ]]; then
+            if [ "$AUTO_YES" = true ]; then
+                conda_env_name="sagerefiner"
+            else
+                read -p "Enter conda environment name (default: sagerefiner): " conda_env_name
+                conda_env_name=${conda_env_name:-sagerefiner}
+            fi
 
-    if [[ $create_venv =~ ^[Yy]$ ]]; then
-        read -p "Enter conda environment name (default: sagerefiner): " conda_env_name
-        conda_env_name=${conda_env_name:-sagerefiner}
-
-        # Check if conda environment already exists
-        if conda env list | grep -q "^${conda_env_name} "; then
-            echo "Conda environment '$conda_env_name' already exists"
-            read -p "Remove and recreate? [y/N]: " recreate
-            if [[ $recreate =~ ^[Yy]$ ]]; then
+            # Check if conda environment already exists
+            if conda env list | grep -q "^${conda_env_name} "; then
+                echo "Conda environment '$conda_env_name' already exists"
+                if [ "$AUTO_YES" = true ]; then
+                    recreate="N"  # In CI, use existing environment
+                else
+                    read -p "Remove and recreate? [y/N]: " recreate
+                fi
+                if [[ $recreate =~ ^[Yy]$ ]]; then
                 echo "Removing existing conda environment..."
                 conda env remove -n "$conda_env_name" -y
                 echo "Creating new conda environment '$conda_env_name' with Python ${MIN_PYTHON_VERSION}..."
@@ -110,13 +169,16 @@ if [ "$IN_VENV" = false ]; then
             conda create -n "$conda_env_name" python="${MIN_PYTHON_VERSION}" -y
         fi
 
-        echo "Activating conda environment..."
-        eval "$(conda shell.bash hook)"
-        conda activate "$conda_env_name"
-        echo -e "${GREEN}✓ Conda environment activated${NC}\n"
-    else
-        echo "Skipping conda environment creation"
-        echo -e "${YELLOW}Warning: Installing without conda environment (not recommended)${NC}\n"
+            echo "Activating conda environment..."
+            eval "$(conda shell.bash hook)"
+            conda activate "$conda_env_name"
+            echo -e "${GREEN}✓ Conda environment activated${NC}\n"
+        else
+            echo "Skipping conda environment creation"
+            if [ "$AUTO_YES" = false ]; then
+                echo -e "${YELLOW}Warning: Installing without conda environment (not recommended)${NC}\n"
+            fi
+        fi
     fi
 fi
 
@@ -127,13 +189,22 @@ echo -e "${GREEN}✓ pip upgraded${NC}\n"
 
 # Select installation profile
 echo -e "${YELLOW}[4/6] Select installation profile${NC}"
-echo "Available profiles:"
-echo "  1) Basic        - Core dependencies only"
-echo "  2) Full         - All optional dependencies (vLLM + reranker)"
-echo "  3) Development  - Full + development tools + benchmark dependencies"
 
-read -p "Choose profile [1-3] (default: 1): " profile
-profile=${profile:-1}
+if [ "$DEV_MODE" = true ]; then
+    profile=3
+    echo "Auto-selected profile: Development (--dev mode)"
+elif [ "$AUTO_YES" = true ]; then
+    profile=1
+    echo "Auto-selected profile: Basic (--yes mode)"
+else
+    echo "Available profiles:"
+    echo "  1) Basic        - Core dependencies only"
+    echo "  2) Full         - All optional dependencies (vLLM + reranker)"
+    echo "  3) Development  - Full + development tools + benchmark dependencies"
+    
+    read -p "Choose profile [1-3] (default: 1): " profile
+    profile=${profile:-1}
+fi
 
 case $profile in
     1)

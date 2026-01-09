@@ -18,7 +18,6 @@ from unittest.mock import patch
 
 import pytest
 
-
 from benchmarks.cli import (
     cmd_config,
     create_parser,

@@ -265,12 +265,11 @@ def _format_p_value(p: float) -> str:
     """格式化 p 值显示"""
     if p < 0.001:
         return "<0.001***"
-    elif p < 0.01:
+    if p < 0.01:
         return f"{p:.3f}**"
-    elif p < 0.05:
+    if p < 0.05:
         return f"{p:.3f}*"
-    else:
-        return f"{p:.3f}"
+    return f"{p:.3f}"
 
 
 def _interpret_cohens_d(d: float) -> str:
@@ -278,12 +277,11 @@ def _interpret_cohens_d(d: float) -> str:
     abs_d = abs(d)
     if abs_d < 0.2:
         return "negligible"
-    elif abs_d < 0.5:
+    if abs_d < 0.5:
         return "small"
-    elif abs_d < 0.8:
+    if abs_d < 0.8:
         return "medium"
-    else:
-        return "large"
+    return "large"
 
 
 def generate_significance_report(
@@ -317,7 +315,7 @@ def generate_significance_report(
         raise ValueError(f"Baseline '{baseline_name}' not found in results")
 
     baseline_scores = results[baseline_name]
-    methods = [m for m in results.keys() if m != baseline_name]
+    methods = [m for m in results if m != baseline_name]
 
     # 收集统计结果
     stats_results: list[SignificanceResult] = []

@@ -162,8 +162,7 @@ def mean_normalized_rank(
     if normalize:
         seq_length = len(predicted_scores)
         return mean_rank / seq_length if seq_length > 0 else 1.0
-    else:
-        return mean_rank
+    return mean_rank
 
 
 class MetricsAggregator:
@@ -398,14 +397,13 @@ class HeadwiseEvaluator:
         # 在序列维度池化
         if pooling_method == "mean":
             return vectors.mean(dim=2)
-        elif pooling_method == "max":
+        if pooling_method == "max":
             return vectors.max(dim=2)[0]
-        elif pooling_method == "first":
+        if pooling_method == "first":
             return vectors[:, :, 0, :]
-        elif pooling_method == "last":
+        if pooling_method == "last":
             return vectors[:, :, -1, :]
-        else:
-            raise ValueError(f"Unknown pooling: {pooling_method}")
+        raise ValueError(f"Unknown pooling: {pooling_method}")
 
     def _compute_similarity(
         self,
