@@ -21,15 +21,27 @@ jobs:
       - name: Install dependencies
         run: |
           echo "📦 Installing dependencies..."
-          python -m pip install --upgrade pip
-          pip install pyyaml
           
-          # Use quickstart.sh to install SAGE ecosystem (dev mode)
-          echo "📦 Installing SAGE ecosystem using quickstart.sh..."
-          chmod +x ./quickstart.sh
-          ./quickstart.sh --dev --yes --no-sync-submodules
+          # Free up disk space
+          echo "🧹 Cleaning up disk space..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo apt-get clean
+          df -h
           
-          echo "✅ All packages installed successfully"
+          # Upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
+          
+          # Install only test dependencies (without heavy packages like vllm)
+          echo "📦 Installing test dependencies..."
+          pip install -e ".[test]"
+          
+          # Install minimal SAGE packages for tests (without full ecosystem)
+          echo "📦 Installing minimal SAGE packages..."
+          pip install --no-cache-dir isage-common
+          
+          echo "✅ Installation completed"
 
       - name: Run tests
         run: |
