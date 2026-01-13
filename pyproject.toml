@@ -1,97 +1,56 @@
 [build-system]
-requires = ["setuptools>=65.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "isage-refiner"
-version = "0.1.0"
-description = "Intelligent context compression algorithms for RAG systems"
+version = "0.1.0.0"
+description = "SAGE Refiner Framework - Context compression for RAG (LongRefiner, REFORM, Provence)"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = "MIT"
 authors = [
-    {name = "IntelliStream Team", email = "shuhao_zhang@hust.edu.cn"}
+    { name = "IntelliStream Team", email = "shuhao_zhang@hust.edu.cn" }
 ]
-keywords = ["rag", "llm", "compression", "context", "nlp", "ai", "ml"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+keywords = [
+    "refiner",
+    "context-compression",
+    "RAG",
+    "LongRefiner",
+    "REFORM",
+    "LLM",
+    "AI",
 ]
 
 dependencies = [
-    "torch>=2.7.0,<3.0.0",
-    "transformers>=4.52.0,<4.56.0",
-    "numpy>=1.26.0,<2.3.0",
-    "pyyaml>=6.0,<7.0",
-    "json-repair>=0.30.0,<1.0.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0",
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
 ]
 
 [project.optional-dependencies]
-vllm = [
-    "vllm>=0.10.1,<0.13",
-]
-reranker = [
-    "FlagEmbedding>=1.0.0",
-]
-full = [
-    "vllm>=0.10.1,<0.13",
-    "FlagEmbedding>=1.0.0",
-]
 dev = [
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0.0",
-]
-test = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.4.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/intellistream/sageRefiner"
-Documentation = "https://intellistream.github.io/SAGE/"
-Repository = "https://github.com/intellistream/sageRefiner"
-"Bug Tracker" = "https://github.com/intellistream/sageRefiner/issues"
+"Homepage" = "https://github.com/intellistream/sageRefiner"
+"Repository" = "https://github.com/intellistream/sageRefiner"
 
 [tool.setuptools.packages.find]
-exclude = ["tests*", "examples*"]
+where = ["src"]
+include = ["sage_libs*"]
 
-[tool.black]
-line-length = 100
-target-version = ['py310', 'py311']
+[tool.setuptools.package-dir]
+"" = "src"
 
 [tool.ruff]
 line-length = 100
 target-version = "py310"
 
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "PIE", "PT", "RET", "SIM"]
-ignore = [
-    "E501",   # Line too long (handled by formatter)
-    "E402",   # Module level import not at top (needed for warnings setup)
-    "N806",   # Variable in function should be lowercase (Q, K, V are conventional)
-    "N812",   # Lowercase imported as non-lowercase (F alias is common)
-    "B905",   # zip without strict (Python 3.9 compatibility)
-]
-
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-ignore_missing_imports = true
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = "-v --tb=short"
+asyncio_mode = "auto"

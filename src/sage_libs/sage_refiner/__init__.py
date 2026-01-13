@@ -5,7 +5,7 @@ sage_refiner - Intelligent Context Compression for RAG
 Standalone library providing state-of-the-art context compression algorithms.
 
 Quick Start:
-    >>> from sage_refiner import LongRefinerCompressor, RefinerConfig
+    >>> from sage_libs.sage_refiner import LongRefinerCompressor, RefinerConfig
     >>> config = RefinerConfig(algorithm="long_refiner", budget=2048)
     >>> refiner = LongRefinerCompressor(config.to_dict())
     >>> result = refiner.compress(question, documents, budget=2048)
