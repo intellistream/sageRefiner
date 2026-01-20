@@ -19,30 +19,17 @@ import sys
 # 禁用 httpx 的 INFO 日志
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-from sage.common.utils.config.loader import load_config
-from sage.common.utils.logging.custom_logger import CustomLogger
-from sage.kernel.api.local_environment import LocalEnvironment
-from sage.libs.foundation.io import LongBenchBatch
-
-# RECOMPAbstractiveRefinerOperator may not be available yet (depends on Task 2 completion)
-try:
-    from sage_refiner.algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
-
-    if RECOMPAbstractiveRefinerOperator is None:
-        raise ImportError("RECOMPAbstractiveRefinerOperator is None")
-except ImportError:
-    RECOMPAbstractiveRefinerOperator = None
-    print(
-        "⚠️  Warning: RECOMPAbstractiveRefinerOperator is not available yet.\n"
-        "   Please ensure Task 2 (RECOMP Abstractive implementation) is completed first.\n"
-        "   See: docs/dev-notes/l4-middleware/recomp-integration-tasks.md"
-    )
-
 from sage.benchmark.benchmark_longbench import (
+    LongBenchBatch,
     LongBenchEvaluator,
     LongBenchPromptor,
 )
+from sage.common.utils.config.loader import load_config
+from sage.common.utils.logging.custom_logger import CustomLogger
+from sage.kernel.api.local_environment import LocalEnvironment
 from sage.middleware.operators.rag import OpenAIGenerator
+
+from sage_refiner.algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
 
 
 def pipeline_run(config):
@@ -68,13 +55,6 @@ if __name__ == "__main__":
         print("🧪 Test mode detected - LongBench RECOMP Abstractive pipeline")
         print("✅ Test passed: Example structure validated")
         sys.exit(0)
-
-    # 检查 RECOMPAbstractiveRefinerOperator 是否可用
-    if RECOMPAbstractiveRefinerOperator is None:
-        print("❌ RECOMPAbstractiveRefinerOperator is not available.")
-        print("   Please complete Task 2 (RECOMP Abstractive implementation) first.")
-        print("   See: docs/dev-notes/l4-middleware/recomp-integration-tasks.md")
-        sys.exit(1)
 
     config_path = os.path.join(
         os.path.dirname(__file__), "..", "..", "config", "config_recomp_abst.yaml"
