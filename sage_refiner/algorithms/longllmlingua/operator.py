@@ -70,6 +70,8 @@ class LongLLMLinguaRefinerOperator(MapOperator):
         iterative_size: int - Tokens per iteration (default: 200)
     """
 
+    _compressor: LongLLMLinguaCompressor | None
+
     def __init__(self, config: dict[str, Any], ctx: Any = None):
         """Initialize LongLLMLingua Operator
 

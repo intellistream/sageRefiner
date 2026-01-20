@@ -410,7 +410,7 @@ class LongLLMLinguaCompressor:
             f"tokens ({result['rate']})"
         )
 
-        return result
+        return dict(result)
 
     def compress_for_rag(
         self,
@@ -454,7 +454,8 @@ class LongLLMLinguaCompressor:
         Returns:
             Number of tokens
         """
-        return self.compressor.get_token_length(text, use_oai_tokenizer=use_oai_tokenizer)
+        result: int = self.compressor.get_token_length(text, use_oai_tokenizer=use_oai_tokenizer)
+        return result
 
     def __repr__(self) -> str:
         return (

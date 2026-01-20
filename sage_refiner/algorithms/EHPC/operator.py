@@ -209,6 +209,9 @@ class EHPCRefinerOperator(MapOperator):
 
         # 执行压缩（使用 compress_text 接口 for EMI mode）
         try:
+            if self._compressor is None:
+                logger.error("Compressor not initialized")
+                return self._bypass(data)
             result = self._compressor.compress_text(
                 context=documents,
                 question=query if self.cfg.get("include_query", False) else "",

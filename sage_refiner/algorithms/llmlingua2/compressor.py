@@ -195,6 +195,7 @@ class LLMLingua2Compressor:
             >>> print(f"Ratio: {result['ratio']}")
         """
         self._ensure_initialized()
+        assert self._compressor is not None
 
         # Handle single string input
         if isinstance(context, str):
@@ -235,7 +236,7 @@ class LLMLingua2Compressor:
             f"tokens ({result['rate']})"
         )
 
-        return result
+        return dict(result)
 
     def compress_with_question(
         self,
@@ -289,7 +290,9 @@ class LLMLingua2Compressor:
             Number of tokens.
         """
         self._ensure_initialized()
-        return self._compressor.get_token_length(text, use_oai_tokenizer=use_oai_tokenizer)
+        assert self._compressor is not None
+        result: int = self._compressor.get_token_length(text, use_oai_tokenizer=use_oai_tokenizer)
+        return result
 
     @property
     def tokenizer(self):

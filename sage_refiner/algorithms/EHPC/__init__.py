@@ -59,6 +59,10 @@ Exports:
     - load_ehpc_model: 模型加载函数
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import EHPCCompressor
 from .config import (
     CODELLAMA_7B_CONFIG,
@@ -83,7 +87,12 @@ __all__ = [
     "PHI3_MINI_CONFIG",
 ]
 
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import EHPCRefinerOperator as _EHPCRefinerOperator
+
 # Operator 需要 SAGE 依赖，可选导出
+EHPCRefinerOperator: type[_EHPCRefinerOperator] | None
 try:
     from .operator import EHPCRefinerOperator
 

@@ -12,7 +12,7 @@ Three-stage pipeline:
 
 import re
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import json_repair
 import numpy as np
@@ -166,7 +166,7 @@ class LongRefinerCompressor:
 
         from rank_bm25 import BM25Okapi
 
-        corpus_dict = OrderedDict()
+        corpus_dict: OrderedDict[str, Any] = OrderedDict()
         for pair in all_pairs:
             question = pair[0]
             doc = pair[1]
@@ -184,6 +184,8 @@ class LongRefinerCompressor:
 
     def _cal_score_reranker(self, all_pairs: list[tuple[str, str]]) -> list[float]:
         """Calculate reranker scores for query-document pairs"""
+        assert self.score_tokenizer is not None
+        assert self.score_model is not None
         all_scores = []
         batch_size = 256
         for idx in tqdm(range(0, len(all_pairs), batch_size), desc="Calculating reranker scores"):
@@ -216,6 +218,8 @@ class LongRefinerCompressor:
 
     def _cal_score_sbert(self, all_pairs: list[tuple[str, str]]) -> list[float]:
         """Calculate SBERT scores for query-document pairs"""
+        assert self.score_tokenizer is not None
+        assert self.score_model is not None
 
         def pooling(pooler_output, last_hidden_state, attention_mask=None, pooling_method="mean"):
             if pooling_method == "mean":
@@ -267,7 +271,7 @@ class LongRefinerCompressor:
         question: str,
         document_list: list[dict],
         budget: int = 2048,
-        ratio: float = None,
+        ratio: float | None = None,
     ) -> dict:
         """Compress documents for a single question
 
@@ -288,7 +292,7 @@ class LongRefinerCompressor:
         question_list: list[str],
         document_list: list[list[dict]],
         budget: int = 2048,
-        ratio: float = None,
+        ratio: float | None = None,
     ) -> list[dict]:
         """Batch compress documents
 
@@ -516,7 +520,7 @@ class LongRefinerCompressor:
             ) + self.tokenizer.decode(tokenized_content[-half:], skip_special_tokens=True)
         return doc_content
 
-    def parse_xml_doc(self, original_doc_content: str, xml_doc: str) -> dict:
+    def parse_xml_doc(self, original_doc_content: str, xml_doc: str) -> dict[str, Any]:
         """Parse XML-structured document output
 
         Args:
@@ -530,7 +534,7 @@ class LongRefinerCompressor:
         sub_section_pattern = r'<sub-section: "([^"]+)">(.*?)</sub-section: "\1">'
         matches = re.findall(pattern, xml_doc, re.DOTALL)
 
-        structured_doc = {"abstract": None, "sections": {}}
+        structured_doc: dict[str, Any] = {"abstract": None, "sections": {}}
 
         for match in matches:
             if match[0]:  # Abstract content
@@ -607,7 +611,7 @@ class LongRefinerCompressor:
                             )
         return structured_doc
 
-    def _fill_single_sequence(self, content: str, part_sequence: str) -> str:
+    def _fill_single_sequence(self, content: str, part_sequence: str) -> str | None:
         """Fill single placeholder sequence"""
         # Generate regex pattern for part_sequence
         if "..." in part_sequence:
@@ -621,12 +625,12 @@ class LongRefinerCompressor:
         pattern = rf"({escaped_sentence})"
 
         # Fill the full content
-        full_content = re.findall(pattern, content)
+        full_content: list[str] = re.findall(pattern, content)
         if full_content == []:
             return None
         return full_content[-1]
 
-    def _fill_full_content(self, content: str, part_content: str) -> str:
+    def _fill_full_content(self, content: str, part_content: str) -> str | None:
         """Fill placeholders in partial content
 
         Args:
@@ -682,7 +686,7 @@ class LongRefinerCompressor:
         doc_structuring_result: list[list[dict]],
         query_analysis_result: list[dict],
         budget: int,
-        ratio: float = None,
+        ratio: float | None = None,
     ) -> list[list[str]]:
         """Run complete search: local + global selection
 
@@ -707,8 +711,8 @@ class LongRefinerCompressor:
             node["score"] = score
 
         # Build node indices
-        idx2node = {}
-        parent2node = {}
+        idx2node: dict[str, list[dict[str, Any]]] = {}
+        parent2node: dict[str, list[dict[str, Any]]] = {}
         for node in all_nodes:
             idx = node["idx"]
             parent = f"{node['question']}_{node['doc_idx']}_{node['parent']}"
@@ -923,7 +927,7 @@ class LongRefinerCompressor:
         all_nodes: list[dict],
         idx2node: dict,
         budget: int,
-        ratio: float,
+        ratio: float | None,
         document_list: list[list[dict]],
     ) -> list[list[dict]]:
         """Select nodes by budget constraint
@@ -1020,7 +1024,7 @@ class LongRefinerCompressor:
 
             # Final selection with actual budget
             actual_budget = idx2budget[idx]
-            final_node_list = []
+            final_node_list: list[dict[str, Any]] = []
             for node in cand_node_list:
                 # Check if budget is exhausted or current node exceeds remaining budget
                 if actual_budget <= 0 or node["length"] > actual_budget:
