@@ -162,7 +162,9 @@ class ComparisonExperiment(BaseRefinerExperiment):
         Returns:
             ExperimentResult 包含所有算法的对比结果（聚合）
         """
-        start_time = datetime.now()
+        from datetime import timezone
+
+        start_time = datetime.now(tz=timezone.utc)
 
         # 获取要运行的数据集列表
         datasets = self.config.get_datasets()
@@ -186,7 +188,7 @@ class ComparisonExperiment(BaseRefinerExperiment):
         # 聚合跨数据集结果
         self._aggregate_results()
 
-        end_time = datetime.now()
+        end_time = datetime.now(tz=timezone.utc)
         self.multi_dataset_result.end_time = end_time.isoformat()
         self.multi_dataset_result.duration_seconds = (end_time - start_time).total_seconds()
 

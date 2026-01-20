@@ -170,100 +170,102 @@ class TestLongRefinerMocked:
         mock_auto_model.from_pretrained.return_value = mock_score_model
 
         # Create compressor with mocked dependencies
-        with patch.object(LongRefinerCompressor, "_load_trained_model"):
-            with patch.object(LongRefinerCompressor, "_load_score_model"):
-                compressor = LongRefinerCompressor.__new__(LongRefinerCompressor)
-                compressor.model = mock_model
-                compressor.tokenizer = mock_tokenizer
-                compressor.score_model = mock_score_model
-                compressor.score_tokenizer = mock_tokenizer
-                compressor.local_score_func = MagicMock(return_value=[0.5] * 10)  # Mock scores
-                compressor.step_to_config = {
-                    "query_analysis": {
-                        "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
-                        "sampling_params": MagicMock(),
-                        "lora_request": MagicMock(),
-                    },
-                    "doc_structuring": {
-                        "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
-                        "sampling_params": MagicMock(),
-                        "lora_request": MagicMock(),
-                    },
-                    "global_selection": {
-                        "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
-                        "sampling_params": MagicMock(),
-                        "lora_request": MagicMock(),
-                    },
-                }
+        with (
+            patch.object(LongRefinerCompressor, "_load_trained_model"),
+            patch.object(LongRefinerCompressor, "_load_score_model"),
+        ):
+            compressor = LongRefinerCompressor.__new__(LongRefinerCompressor)
+            compressor.model = mock_model
+            compressor.tokenizer = mock_tokenizer
+            compressor.score_model = mock_score_model
+            compressor.score_tokenizer = mock_tokenizer
+            compressor.local_score_func = MagicMock(return_value=[0.5] * 10)  # Mock scores
+            compressor.step_to_config = {
+                "query_analysis": {
+                    "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
+                    "sampling_params": MagicMock(),
+                    "lora_request": MagicMock(),
+                },
+                "doc_structuring": {
+                    "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
+                    "sampling_params": MagicMock(),
+                    "lora_request": MagicMock(),
+                },
+                "global_selection": {
+                    "prompt_template": MagicMock(get_prompt=lambda **k: "prompt"),
+                    "sampling_params": MagicMock(),
+                    "lora_request": MagicMock(),
+                },
+            }
 
-                # Mock internal methods
-                compressor.run_query_analysis = MagicMock(
-                    return_value=[{"Local": 0.6, "Global": 0.4}]
-                )
-                compressor.run_doc_structuring = MagicMock(
-                    return_value=[
-                        [
-                            {
-                                "title": "Doc1",
-                                "abstract": ["Test abstract"],
-                                "sections": {},
-                            }
-                        ]
+            # Mock internal methods
+            compressor.run_query_analysis = MagicMock(return_value=[{"Local": 0.6, "Global": 0.4}])
+            compressor.run_doc_structuring = MagicMock(
+                return_value=[
+                    [
+                        {
+                            "title": "Doc1",
+                            "abstract": ["Test abstract"],
+                            "sections": {},
+                        }
                     ]
-                )
-                compressor.run_all_search = MagicMock(return_value=[["Compressed content here"]])
+                ]
+            )
+            compressor.run_all_search = MagicMock(return_value=[["Compressed content here"]])
 
-                # Test compress
-                result = compressor.compress(
-                    question=sample_query,
-                    document_list=sample_doc_dicts,
-                    budget=128,
-                )
+            # Test compress
+            result = compressor.compress(
+                question=sample_query,
+                document_list=sample_doc_dicts,
+                budget=128,
+            )
 
-                # Verify result structure
-                assert result is not None
-                assert isinstance(result, dict)
-                assert "compressed_context" in result
-                assert "original_tokens" in result
-                assert "compressed_tokens" in result
-                assert "compression_rate" in result
+            # Verify result structure
+            assert result is not None
+            assert isinstance(result, dict)
+            assert "compressed_context" in result
+            assert "original_tokens" in result
+            assert "compressed_tokens" in result
+            assert "compression_rate" in result
 
     def test_batch_compress_multiple_queries(self, mock_tokenizer, mock_model):
         """Test batch_compress with multiple queries."""
-        with patch.object(LongRefinerCompressor, "_load_trained_model"):
-            with patch.object(LongRefinerCompressor, "_load_score_model"):
-                compressor = LongRefinerCompressor.__new__(LongRefinerCompressor)
-                compressor.model = mock_model
-                compressor.tokenizer = mock_tokenizer
+        with (
+            patch.object(LongRefinerCompressor, "_load_trained_model"),
+            patch.object(LongRefinerCompressor, "_load_score_model"),
+        ):
+            compressor = LongRefinerCompressor.__new__(LongRefinerCompressor)
+            compressor.model = mock_model
+            compressor.tokenizer = mock_tokenizer
 
-                # Mock all internal methods
-                compressor.run_query_analysis = MagicMock(
-                    return_value=[
-                        {"Local": 0.6, "Global": 0.4},
-                        {"Local": 0.7, "Global": 0.3},
-                    ]
-                )
-                compressor.run_doc_structuring = MagicMock(
-                    return_value=[
-                        [{"title": "D1", "abstract": ["a1"], "sections": {}}],
-                        [{"title": "D2", "abstract": ["a2"], "sections": {}}],
-                    ]
-                )
-                compressor.run_all_search = MagicMock(return_value=[["Content 1"], ["Content 2"]])
-
-                # Test
-                questions = ["Q1?", "Q2?"]
-                docs = [
-                    [{"contents": "Doc1 content"}],
-                    [{"contents": "Doc2 content"}],
+            # Mock all internal methods
+            compressor.run_query_analysis = MagicMock(
+                return_value=[
+                    {"Local": 0.6, "Global": 0.4},
+                    {"Local": 0.7, "Global": 0.3},
                 ]
+            )
+            compressor.run_doc_structuring = MagicMock(
+                return_value=[
+                    [{"title": "D1", "abstract": ["a1"], "sections": {}}],
+                    [{"title": "D2", "abstract": ["a2"], "sections": {}}],
+                ]
+            )
+            compressor.run_all_search = MagicMock(return_value=[["Content 1"], ["Content 2"]])
 
-                results = compressor.batch_compress(
-                    question_list=questions,
-                    document_list=docs,
-                    budget=256,
-                )
+            # Test
+            questions = ["Q1?", "Q2?"]
+            docs = [
+                [{"contents": "Doc1 content"}],
+                [{"contents": "Doc2 content"}],
+            ]
 
-                assert len(results) == 2
-                for r in results:
-                    assert "compressed_context" in r
+            results = compressor.batch_compress(
+                question_list=questions,
+                document_list=docs,
+                budget=256,
+            )
+
+            assert len(results) == 2
+            for r in results:
+                assert "compressed_context" in r

@@ -9,61 +9,44 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          echo "📦 Installing dependencies..."
-          
-          # Free up disk space
-          echo "🧹 Cleaning up disk space..."
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/local/share/boost
-          sudo apt-get clean
-          df -h
-          
-          # Upgrade pip
-          python -m pip install --upgrade pip setuptools wheel
-          
-          # Install only test dependencies (without heavy packages like vllm)
-          echo "📦 Installing test dependencies..."
-          pip install -e ".[test]"
-          
-          # Install minimal SAGE packages for tests (without full ecosystem)
-          echo "📦 Installing minimal SAGE packages..."
-          pip install --no-cache-dir isage-common
-          
-          echo "✅ Installation completed"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test]"
 
-      - name: Run tests
-        run: |
-          pytest tests/ -v --tb=short
+    - name: Run tests
+      run: |
+        pytest tests/ -v --tb=short
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-      - name: Install linters
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+    - name: Install linters
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff
 
-      - name: Run ruff check
-        run: ruff check sage_refiner/
+    - name: Run ruff check
+      run: ruff check sage_refiner/
 
-      - name: Run ruff format check
-        run: ruff format --check sage_refiner/
+    - name: Run ruff format check
+      run: ruff format --check sage_refiner/

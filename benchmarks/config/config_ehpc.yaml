@@ -1,6 +1,6 @@
 pipeline:
-  name: sage-benchmark-provence-rag
-  description: Provence RAG Pipeline (LongBench)
+  name: sage-benchmark-ehpc-rag
+  description: EHPC RAG Pipeline (LongBench)
   version: 1.0.0
 
 source:
@@ -22,14 +22,15 @@ generator:
 
 refiner:
   enabled: true
-  # Provence 使用专门的 DeBERTa-v3 模型，不是 LLM
-  model_name: naver/provence-reranker-debertav3-v1
-  threshold: 0.1
-  batch_size: 32
-  always_select_title: true
-  reorder: false
-  top_k: 5
+  model_name: meta-llama/Llama-3.1-8B-Instruct
   device: cuda:0
+  flash_attention_2: false
+  auto_config: true
+  topk: 2048
+  window_size: 32
+  pool: avg_pool
+  kernel_size: 4
+  include_query: false
 
 evaluate:
   longbench_e_buckets: false

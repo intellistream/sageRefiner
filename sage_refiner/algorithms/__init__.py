@@ -5,7 +5,6 @@ Refiner Algorithms
 Collection of context compression and refinement algorithms.
 
 Available Algorithms:
-    - REFORM: Attention-head driven token selection for RAG context compression
     - RECOMP Extractive: Sentence-level extractive compression with dual encoders
     - RECOMP Abstractive: T5-based abstractive summarization compression
     - LongRefiner: Long document refinement with sliding window
@@ -19,12 +18,8 @@ from .LongRefiner import LongRefinerCompressor
 from .provence import ProvenceCompressor
 from .recomp_abst import RECOMPAbstractiveCompressor
 from .recomp_extr import RECOMPExtractiveCompressor
-from .reform import AttentionHookExtractor, REFORMCompressor
 
 __all__ = [
-    # REFORM
-    "REFORMCompressor",
-    "AttentionHookExtractor",
     # RECOMP Extractive
     "RECOMPExtractiveCompressor",
     # RECOMP Abstractive

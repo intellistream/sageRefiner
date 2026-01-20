@@ -41,9 +41,12 @@ reranker = [
     "FlagEmbedding>=1.0.0",
 ]
 benchmark = [
-    # SAGE 生态组件将在 quickstart 中分阶段安装，避免依赖解析过深
-    # 参考 quickstart.sh 中的分阶段安装逻辑
-    
+    # SAGE 生态组件
+    "isage-common[embedding]",
+    "isage-kernel",
+    "isage-libs",
+    "isage-middleware",
+
     # 数据分析和可视化
     "scipy>=1.10.0",
     "matplotlib>=3.7.0",
@@ -68,10 +71,6 @@ dev = [
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "pandas>=2.0.0",
-    "matplotlib>=3.7.0",
-    "scipy>=1.10.0",
-    "datasets>=2.14.0",
 ]
 
 [project.urls]
