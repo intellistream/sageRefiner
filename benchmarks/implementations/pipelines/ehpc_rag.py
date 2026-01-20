@@ -14,15 +14,15 @@ import sys
 # 禁用 httpx 的 INFO 日志
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
+from sage.benchmark.benchmark_longbench import (
+    LongBenchEvaluator,
+    LongBenchPromptor,
+)
 from sage.common.utils.config.loader import load_config
 from sage.common.utils.logging.custom_logger import CustomLogger
 from sage.kernel.api.local_environment import LocalEnvironment
 from sage.libs.foundation.io import LongBenchBatch
-from sage.middleware.operators.rag import (
-    LongBenchEvaluator,
-    LongBenchPromptor,
-    OpenAIGenerator,
-)
+from sage.middleware.operators.rag import OpenAIGenerator
 
 from sage_refiner.algorithms.EHPC import EHPCRefinerOperator
 

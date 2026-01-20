@@ -46,9 +46,7 @@ def normalize_text(text: str) -> str:
     text = text.lower()
 
     # Unicode NFKC 规范化（处理各种 Unicode 变体）
-    text = unicodedata.normalize("NFKC", text)
-
-    return text
+    return unicodedata.normalize("NFKC", text)
 
 
 def find_subsequence(
@@ -241,8 +239,10 @@ class AttentionHookExtractor:
         logger.info(f"Found {len(self.attention_modules)} attention layers")
 
         # Hook 存储
-        self.hooks = []
-        self.attention_outputs = {}  # {layer_idx: {"Q": tensor, "K": tensor, "V": tensor}}
+        self.hooks: list[torch.utils.hooks.RemovableHandle] = []
+        self.attention_outputs: dict[
+            int, dict[str, torch.Tensor]
+        ] = {}  # {layer_idx: {"Q": tensor, "K": tensor, "V": tensor}}
 
     def _get_dtype(self, dtype_str: str) -> torch.dtype:
         """获取 torch dtype"""
@@ -362,8 +362,10 @@ class HeadwiseEvaluator:
         self.context_pooling = context_pooling
         self.output_top_k = output_top_k
 
-        # 存储每个头的指标
-        self.head_metrics = defaultdict(lambda: MetricsAggregator())
+        # 存储每个头的指标 (key: "L{layer}_H{head}_{head_type}")
+        self.head_metrics: defaultdict[str, MetricsAggregator] = defaultdict(
+            lambda: MetricsAggregator()
+        )
 
         logger.info("Evaluator initialized (Q/K/V heads)")
 
@@ -383,9 +385,8 @@ class HeadwiseEvaluator:
         Returns:
             [batch, heads, dim]
         """
-        if indices is not None and len(indices) > 0:
-            if vectors.dim() == 4:
-                vectors = vectors[:, :, indices, :]
+        if indices is not None and len(indices) > 0 and vectors.dim() == 4:
+            vectors = vectors[:, :, indices, :]
 
         if vectors.dim() == 4 and vectors.shape[2] == 0:
             batch, heads, _, dim = vectors.shape
@@ -435,16 +436,14 @@ class HeadwiseEvaluator:
         pairwise = torch.matmul(context_vecs, query_vecs.transpose(-2, -1))
 
         # Max pooling over query dimension
-        similarity = pairwise.max(dim=-1)[0]  # [batch, heads, context_len]
-
-        return similarity
+        return pairwise.max(dim=-1)[0]  # [batch, heads, context_len]
 
     def evaluate_sample(
         self,
         question: str,
         context: str,
         answers: list[str],
-    ) -> dict[str, dict[str, float]]:
+    ) -> dict[tuple[int, int, str], dict[str, float]]:
         """评估单个样本
 
         根据 REFORM 论文，只将 ground-truth 答案 span 作为正样本 token，
@@ -532,8 +531,8 @@ class HeadwiseEvaluator:
         if not answer_token_indices:
             logger.warning(f"No answer spans found in context for answers: {answers}")
             # 返回默认 MNR=1.0
-            results = {}
-            for layer_idx in attention_outputs.keys():
+            results: dict[tuple[int, int, str], dict[str, float]] = {}
+            for layer_idx in attention_outputs:
                 for head_type in ["Q", "K", "V"]:
                     num_heads = attention_outputs[layer_idx][head_type].shape[1]
                     for head_idx in range(num_heads):
@@ -629,9 +628,7 @@ class HeadwiseEvaluator:
             )
 
         df = pd.DataFrame(rows)
-        df = df.sort_values("mnr")  # 按 MNR 升序排列
-
-        return df
+        return df.sort_values("mnr")  # 按 MNR 升序排列
 
     def get_top_heads(self, results_df: pd.DataFrame, top_k: int | None = None) -> pd.DataFrame:
         """获取 top-k 个头"""

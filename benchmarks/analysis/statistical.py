@@ -14,7 +14,7 @@
 依赖：scipy, numpy
 """
 
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import numpy as np
 from scipy import stats
@@ -455,10 +455,10 @@ def compute_all_statistics(
         raise ValueError(f"Baseline '{baseline_name}' not found in results")
 
     baseline_scores = results[baseline_name]
-    output = {}
+    output: dict[str, dict[str, Any]] = {}
 
     for method, scores in results.items():
-        method_stats = {
+        method_stats: dict[str, Any] = {
             "mean": float(np.mean(scores)),
             "std": float(np.std(scores, ddof=1)),
             "min": float(np.min(scores)),

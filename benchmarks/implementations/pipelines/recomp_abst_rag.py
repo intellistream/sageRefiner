@@ -38,11 +38,11 @@ except ImportError:
         "   See: docs/dev-notes/l4-middleware/recomp-integration-tasks.md"
     )
 
-from sage.middleware.operators.rag import (
+from sage.benchmark.benchmark_longbench import (
     LongBenchEvaluator,
     LongBenchPromptor,
-    OpenAIGenerator,
 )
+from sage.middleware.operators.rag import OpenAIGenerator
 
 
 def pipeline_run(config):

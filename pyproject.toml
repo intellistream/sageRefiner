@@ -46,6 +46,7 @@ benchmark = [
     "isage-kernel",
     "isage-libs",
     "isage-middleware",
+    "isage-benchmark[longbench]",       # LongBench 评测组件
 
     # 数据分析和可视化
     "scipy>=1.10.0",
