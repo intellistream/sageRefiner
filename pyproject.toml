@@ -77,6 +77,12 @@ test = [
     "matplotlib>=3.7.0",
     "pandas>=2.0.0",
     "datasets>=2.14.0",
+    # SAGE components (required by benchmarks module)
+    "isage-common[embedding]",
+    "isage-kernel",
+    "isage-libs",
+    "isage-middleware",
+    "isage-benchmark[longbench]",
 ]
 
 [project.urls]
