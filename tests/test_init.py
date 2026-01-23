@@ -28,4 +28,7 @@ def test_aliases():
 def test_version():
     """Test version string format."""
     assert isinstance(__version__, str)
-    assert len(__version__.split(".")) == 3  # Major.Minor.Patch
+    # Support both semantic versioning (Major.Minor.Patch) and 4-part versions (Major.Minor.Patch.Build)
+    parts = __version__.split(".")
+    assert len(parts) in (3, 4), f"Version should have 3 or 4 parts, got {len(parts)}"
+    assert all(part.isdigit() for part in parts), "All version parts should be numeric"
