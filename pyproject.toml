@@ -72,6 +72,11 @@ dev = [
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    # Test dependencies for benchmarks module
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "pandas>=2.0.0",
+    "datasets>=2.14.0",
 ]
 
 [project.urls]
