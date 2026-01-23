@@ -132,9 +132,9 @@ class RECOMPExtractiveCompressor:
             try:
                 sentences = nltk.sent_tokenize(text)
                 # Filter out empty sentences
-                sentences = [s.strip() for s in sentences if s.strip()]
-                if sentences:
-                    return sentences
+                result_sentences: list[str] = [s.strip() for s in sentences if s.strip()]
+                if result_sentences:
+                    return result_sentences
             except LookupError:
                 # NLTK data not downloaded, fall through to regex
                 logger.debug("NLTK punkt data not available, using regex fallback")

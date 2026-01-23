@@ -9,10 +9,10 @@ Uses BERT-based token classification for fast and accurate prompt compression.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from typing import Any
+    pass
 
 from sage.common.core.functions import MapFunction as MapOperator
 
@@ -71,6 +71,8 @@ class LLMLingua2RefinerOperator(MapOperator):
         ... })
     """
 
+    _compressor: LLMLingua2Compressor | None
+
     def __init__(self, config: dict[str, Any], ctx: Any = None):
         """Initialize the LLMLingua-2 operator.
 
@@ -115,6 +117,12 @@ class LLMLingua2RefinerOperator(MapOperator):
         query = data.get("query", "")
         retrieval_results = data.get("retrieval_results", [])
 
+        # 如果 retrieval_results 为空，尝试从 context 字段获取（支持 LongBench 等数据源）
+        if not retrieval_results:
+            context = data.get("context", "")
+            if context:
+                retrieval_results = [context] if isinstance(context, str) else list(context)
+
         # Handle empty retrieval results
         if not retrieval_results:
             logger.warning(f"No retrieval results for query: '{query[:50]}...'")
@@ -152,6 +160,9 @@ class LLMLingua2RefinerOperator(MapOperator):
             drop_consecutive = self.cfg.get("drop_consecutive", False)
 
             # Perform compression
+            if self._compressor is None:
+                logger.error("Compressor not initialized")
+                return data
             compress_result = self._compressor.compress(
                 context=docs_text,
                 rate=rate,

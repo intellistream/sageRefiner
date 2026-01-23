@@ -12,13 +12,22 @@ References:
     BERGEN: Benchmarking RAG Pipelines
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import ProvenceCompressor
 
 __all__ = [
     "ProvenceCompressor",
 ]
 
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import ProvenceRefinerOperator as _ProvenceRefinerOperator
+
 # Optional: SAGE operator (only when running inside SAGE framework)
+ProvenceRefinerOperator: type[_ProvenceRefinerOperator] | None
 try:
     from .operator import ProvenceRefinerOperator
 

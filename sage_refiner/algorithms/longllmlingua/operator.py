@@ -70,6 +70,8 @@ class LongLLMLinguaRefinerOperator(MapOperator):
         iterative_size: int - Tokens per iteration (default: 200)
     """
 
+    _compressor: LongLLMLinguaCompressor | None
+
     def __init__(self, config: dict[str, Any], ctx: Any = None):
         """Initialize LongLLMLingua Operator
 
@@ -125,6 +127,12 @@ class LongLLMLinguaRefinerOperator(MapOperator):
 
         query = data.get("query", "")
         retrieval_results = data.get("retrieval_results", [])
+
+        # 如果 retrieval_results 为空，尝试从 context 字段获取（支持 LongBench 等数据源）
+        if not retrieval_results:
+            context = data.get("context", "")
+            if context:
+                retrieval_results = [context] if isinstance(context, str) else list(context)
 
         # Handle empty retrieval results
         if not retrieval_results:

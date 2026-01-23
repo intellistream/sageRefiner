@@ -53,11 +53,11 @@ ALGORITHM_MARKERS: dict[str, str] = {
 DEFAULT_COLORS = plt.cm.tab10.colors  # type: ignore[attr-defined]
 
 
-def _get_algorithm_color(algorithm: str, idx: int = 0) -> str:
+def _get_algorithm_color(algorithm: str, idx: int = 0) -> str | tuple[float, float, float]:
     """获取算法对应的颜色"""
     if algorithm.lower() in ALGORITHM_COLORS:
         return ALGORITHM_COLORS[algorithm.lower()]
-    return DEFAULT_COLORS[idx % len(DEFAULT_COLORS)]  # type: ignore[return-value]
+    return DEFAULT_COLORS[idx % len(DEFAULT_COLORS)]  # type: ignore[no-any-return]
 
 
 def _get_algorithm_marker(algorithm: str) -> str:
@@ -449,7 +449,7 @@ def plot_latency_breakdown(
 
     # 计算总延迟并标注
     total_times = np.array(retrieve_times) + np.array(refine_times) + np.array(generate_times)
-    for i, (bar, total) in enumerate(zip(bars3, total_times)):
+    for bar, total in zip(bars3, total_times):
         ax.annotate(
             f"{total:.2f}s",
             xy=(bar.get_x() + bar.get_width() / 2, total),

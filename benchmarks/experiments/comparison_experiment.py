@@ -162,7 +162,9 @@ class ComparisonExperiment(BaseRefinerExperiment):
         Returns:
             ExperimentResult 包含所有算法的对比结果（聚合）
         """
-        start_time = datetime.now()
+        from datetime import timezone
+
+        start_time = datetime.now(tz=timezone.utc)
 
         # 获取要运行的数据集列表
         datasets = self.config.get_datasets()
@@ -186,7 +188,7 @@ class ComparisonExperiment(BaseRefinerExperiment):
         # 聚合跨数据集结果
         self._aggregate_results()
 
-        end_time = datetime.now()
+        end_time = datetime.now(tz=timezone.utc)
         self.multi_dataset_result.end_time = end_time.isoformat()
         self.multi_dataset_result.duration_seconds = (end_time - start_time).total_seconds()
 
@@ -454,7 +456,7 @@ class ComparisonExperiment(BaseRefinerExperiment):
         results = collector.get_results()
         self._log(f"   ✅ Collected {len(results)} sample results")
 
-        return results
+        return list(results)
 
     def _load_and_modify_config(self, algorithm: str, dataset: str = "") -> dict[str, Any]:
         """
@@ -479,7 +481,7 @@ class ComparisonExperiment(BaseRefinerExperiment):
             )
 
         # 加载配置
-        config = load_config(str(config_path))
+        config: dict[str, Any] = load_config(str(config_path))
 
         # 修改 source.max_samples
         if "source" in config:
@@ -524,31 +526,12 @@ class ComparisonExperiment(BaseRefinerExperiment):
         module_name = pipeline_mapping[algorithm]
         self._log(f"   🚀 Starting {module_name} pipeline...")
 
-        # 动态导入 Pipeline 模块
-        if algorithm == "baseline":
-            from benchmarks.implementations.pipelines.baseline_rag import (
-                pipeline_run,
-            )
-        elif algorithm == "longrefiner":
-            from benchmarks.implementations.pipelines.longrefiner_rag import (
-                pipeline_run,
-            )
-        elif algorithm == "reform":
-            from benchmarks.implementations.pipelines.reform_rag import (
-                pipeline_run,
-            )
-        elif algorithm == "provence":
-            from benchmarks.implementations.pipelines.provence_rag import (
-                pipeline_run,
-            )
-        elif algorithm == "longllmlingua":
-            from benchmarks.implementations.pipelines.longllmlingua_rag import (
-                pipeline_run,
-            )
-        elif algorithm == "llmlingua2":
-            from benchmarks.implementations.pipelines.llmlingua2_rag import (
-                pipeline_run,
-            )
+        # 使用 importlib 动态导入 Pipeline 模块
+        import importlib
+
+        module_path = f"benchmarks.implementations.pipelines.{module_name}"
+        pipeline_module = importlib.import_module(module_path)
+        pipeline_run_func = pipeline_module.pipeline_run
 
         # 计算预估等待时间
         # 基于样本数和算法复杂度估算
@@ -567,7 +550,7 @@ class ComparisonExperiment(BaseRefinerExperiment):
         self._log(f"   ⏱️ Estimated time: {estimated_time}s ({estimated_time // 60}min)")
 
         # 运行 Pipeline（在单独的过程中运行）
-        pipeline_run(config)
+        pipeline_run_func(config)
 
         # 等待 Pipeline 完成
         # 使用 time.sleep() 是设计要求

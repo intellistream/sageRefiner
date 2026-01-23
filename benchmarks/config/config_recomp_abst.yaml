@@ -1,49 +1,26 @@
 pipeline:
-  name: "sage-benchmark-recomp-abst-rag"
-  description: "RECOMP Abstractive RAG Pipeline with T5-Based Summarization Compression"
-  version: "1.0.0"
+  name: sage-benchmark-recomp-abst-rag
+  description: RECOMP Abstractive RAG Pipeline (LongBench)
+  version: 1.0.0
 
 source:
-  # 数据源类型：'local'（本地 JSONL） 或 'hf'（HuggingFace Dataset）
-  type: "hf"
-  # HuggingFace Dataset 参数
-  hf_dataset_name: "RUC-NLPIR/FlashRAG_datasets"
-  hf_dataset_config: "nq"  # Natural Questions dataset
-  hf_split: "test"
-  max_samples: 20
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
 
-retriever:
-  # 检索器类型: wiki18_faiss
-  type: "wiki18_faiss"
-
-  # 通用配置
-  dimension: 1024    # BGE-Large-EN-v1.5模型的维度
-  top_k: 100
-
-  # Wiki18 FAISS 专用配置
-  faiss:
-    index_path: "/home/cyb/wiki18_maxp.index"
-    documents_path: "/home/cyb/wiki18_fulldoc.jsonl"
-    mapping_path: "/home/cyb/wiki18_maxp_maxp_mapping.json"  # 段落到文档的映射
-
-  # 嵌入模型配置
-  embedding:
-    method: "hf"
-    model: "BAAI/bge-large-en-v1.5"  # BGE-Large-EN-v1.5模型
-    gpu_device: 0
+promptor:
+  platform: local
 
 generator:
   vllm:
-    api_key: ""
-    method: "openai"
-    model_name: "Qwen/Qwen2.5-7B-Instruct"
-    base_url: "http://11.11.11.7:8903/v1"
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
     seed: 42
 
-promptor:
-  platform: "local"
-
-recomp_abst:
+refiner:
   # RECOMP Abstractive压缩配置
   enabled: true  # 设为false即为baseline模式
 
@@ -53,8 +30,8 @@ recomp_abst:
   # - fangyuan/tqa_abstractive_compressor (TriviaQA 微调)
   # - fangyuan/hotpotqa_abstractive (HotpotQA 微调)
   # - google/flan-t5-base, google/flan-t5-large (通用摘要模型)
-  model_path: "fangyuan/nq_abstractive_compressor"
-  device: "cuda"               # 运行设备 ("cuda", "cpu", 或 null 自动检测)
+  model_path: fangyuan/hotpotqa_abstractive
+  device: cuda                 # 运行设备 ("cuda", "cpu", 或 null 自动检测)
 
   # 生成参数
   max_source_length: 1024      # 输入最大长度（包含question和documents）
@@ -67,8 +44,5 @@ recomp_abst:
   # 可选：模型缓存目录
   # cache_dir: "/path/to/model/cache"
 
-sink:
-  platform: "local"
-
 evaluate:
-  platform: "local"
+  longbench_e_buckets: false

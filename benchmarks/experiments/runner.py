@@ -5,11 +5,14 @@ Refiner Experiment Runner
 统一的实验运行器，支持命令行和编程方式运行实验。
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from benchmarks.experiments.base_experiment import (
+    BaseRefinerExperiment,
     ExperimentResult,
     RefinerExperimentConfig,
 )
@@ -19,6 +22,11 @@ from benchmarks.experiments.comparison_experiment import (
     LatencyExperiment,
     QualityExperiment,
 )
+
+if TYPE_CHECKING:
+    from benchmarks.experiments.comparison_experiment import (
+        MultiDatasetExperimentResult,
+    )
 
 
 class RefinerExperimentRunner:
@@ -46,7 +54,7 @@ class RefinerExperimentRunner:
         )
     """
 
-    EXPERIMENT_TYPES = {
+    EXPERIMENT_TYPES: dict[str, type[BaseRefinerExperiment]] = {
         "comparison": ComparisonExperiment,
         "quality": QualityExperiment,
         "latency": LatencyExperiment,
@@ -157,10 +165,7 @@ class RefinerExperimentRunner:
 
         # 处理数据集参数：支持新的 datasets 和旧的 dataset
         if datasets is None:
-            if dataset is not None:
-                datasets = [dataset]
-            else:
-                datasets = ["nq"]
+            datasets = [dataset] if dataset is not None else ["nq"]
 
         config = RefinerExperimentConfig(
             name="quick_comparison",
@@ -304,7 +309,7 @@ class RefinerExperimentRunner:
 
     @staticmethod
     def print_multi_dataset_table(
-        result: "MultiDatasetExperimentResult",  # noqa: F821
+        result: MultiDatasetExperimentResult,
     ) -> None:
         """
         打印多数据集对比表格
@@ -313,10 +318,10 @@ class RefinerExperimentRunner:
             result: 多数据集实验结果
         """
         from benchmarks.experiments.comparison_experiment import (
-            MultiDatasetExperimentResult,
+            MultiDatasetExperimentResult as MultiDatasetResult,
         )
 
-        if not isinstance(result, MultiDatasetExperimentResult):
+        if not isinstance(result, MultiDatasetResult):
             # 回退到单数据集表格
             RefinerExperimentRunner.print_comparison_table(result)
             return
