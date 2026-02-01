@@ -1,0 +1,40 @@
+pipeline:
+  name: sage-benchmark-longllmlingua-rag
+  description: LongLLMLingua RAG Pipeline (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+refiner:
+  enabled: true
+  model_name: NousResearch/Llama-2-7b-hf
+  device: cuda:0
+  rate: 0.55
+  target_token: -1
+  condition_in_question: after
+  reorder_context: sort
+  dynamic_context_compression_ratio: 0.3
+  condition_compare: true
+  use_context_level_filter: true
+  use_sentence_level_filter: false
+  use_token_level_filter: true
+  context_budget: '+100'
+  iterative_size: 200
+
+evaluate:
+  longbench_e_buckets: false

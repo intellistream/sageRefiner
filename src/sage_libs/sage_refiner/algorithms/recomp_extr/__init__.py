@@ -19,16 +19,25 @@ References:
     https://arxiv.org/pdf/2310.04408.pdf
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import RECOMPExtractiveCompressor
 
 __all__ = [
     "RECOMPExtractiveCompressor",
 ]
 
-# Optional: SAGE operator (only available inside SAGE framework)
-try:
-    from .operator import RECOMPExtractiveOperator
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import RECOMPExtractiveRefinerOperator as _RECOMPExtractiveRefinerOperator
 
-    __all__.append("RECOMPExtractiveOperator")
+# Optional: SAGE operator (only available inside SAGE framework)
+RECOMPExtractiveRefinerOperator: type[_RECOMPExtractiveRefinerOperator] | None
+try:
+    from .operator import RECOMPExtractiveRefinerOperator
+
+    __all__.append("RECOMPExtractiveRefinerOperator")
 except ImportError:
-    RECOMPExtractiveOperator = None
+    RECOMPExtractiveRefinerOperator = None

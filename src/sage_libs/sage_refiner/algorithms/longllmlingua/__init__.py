@@ -16,6 +16,10 @@ References:
     https://arxiv.org/abs/2310.06839
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import DEFAULT_LONG_LLMLINGUA_CONFIG, LongLLMLinguaCompressor
 
 __all__ = [
@@ -23,10 +27,15 @@ __all__ = [
     "DEFAULT_LONG_LLMLINGUA_CONFIG",
 ]
 
-# Optional: SAGE operator (only available inside SAGE framework)
-try:
-    from .operator import LongLLMLinguaOperator
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import LongLLMLinguaRefinerOperator as _LongLLMLinguaRefinerOperator
 
-    __all__.append("LongLLMLinguaOperator")
+# Optional: SAGE operator (only available inside SAGE framework)
+LongLLMLinguaRefinerOperator: type[_LongLLMLinguaRefinerOperator] | None
+try:
+    from .operator import LongLLMLinguaRefinerOperator
+
+    __all__.append("LongLLMLinguaRefinerOperator")
 except ImportError:
-    LongLLMLinguaOperator = None
+    LongLLMLinguaRefinerOperator = None

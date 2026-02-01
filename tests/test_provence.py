@@ -165,33 +165,3 @@ class TestProvenceMocked:
 
         # With reorder=True and top_k=2, should only have 2 docs
         assert len(result["pruned_docs"]) <= 2
-
-
-@pytest.mark.skip(reason="Requires model download and resources")
-def test_provence_initialization():
-    """Test Provence initialization with real model."""
-    compressor = ProvenceCompressor(
-        model_name="naver/provence-reranker-debertav3-v1",
-        threshold=0.1,
-        device="cpu",
-    )
-    assert compressor is not None
-
-
-@pytest.mark.skip(reason="Requires model download and resources")
-def test_provence_compress(sample_query, sample_docs):
-    """Test Provence compression with real model."""
-    compressor = ProvenceCompressor(
-        model_name="naver/provence-reranker-debertav3-v1",
-        threshold=0.1,
-        device="cpu",
-    )
-
-    result = compressor.compress(
-        context="\n\n".join(sample_docs),
-        question=sample_query,
-    )
-
-    assert result is not None
-    assert "compressed_context" in result
-    assert "compression_rate" in result

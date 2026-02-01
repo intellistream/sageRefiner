@@ -15,7 +15,7 @@ from .compressor import RECOMPExtractiveCompressor
 logger = logging.getLogger(__name__)
 
 
-class RECOMPExtractiveOperator(MapOperator):
+class RECOMPExtractiveRefinerOperator(MapOperator):
     """RECOMP Extractive Refiner 算子
 
     在 RAG pipeline 中使用 RECOMP Extractive 算法压缩检索到的上下文。
@@ -144,6 +144,12 @@ class RECOMPExtractiveOperator(MapOperator):
 
         query = data.get("query", "")
         retrieval_results = data.get("retrieval_results", [])
+
+        # 如果 retrieval_results 为空，尝试从 context 字段获取（支持 LongBench 等数据源）
+        if not retrieval_results:
+            context = data.get("context", "")
+            if context:
+                retrieval_results = [context] if isinstance(context, str) else list(context)
 
         # Handle empty retrieval results
         if not retrieval_results:

@@ -1,0 +1,24 @@
+pipeline:
+  name: sage-benchmark-baseline-rag
+  description: Baseline RAG Pipeline without Context Compression (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+evaluate:
+  longbench_e_buckets: false

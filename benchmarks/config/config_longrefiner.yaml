@@ -1,0 +1,30 @@
+pipeline:
+  name: sage-benchmark-longrefiner-rag
+  description: LongRefiner RAG Pipeline (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+refiner:
+  enabled: true
+  model_name: Qwen/Qwen2.5-7B-Instruct
+  base_url: http://11.11.11.7:8903/v1
+  max_tokens: 2048
+
+evaluate:
+  longbench_e_buckets: false

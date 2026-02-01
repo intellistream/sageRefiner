@@ -1,0 +1,38 @@
+pipeline:
+  name: sage-benchmark-llmlingua2-rag
+  description: LLMLingua-2 RAG Pipeline (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+refiner:
+  enabled: true
+  model_name: microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank
+  device: cuda:0
+  rate: 0.5
+  target_token: -1
+  use_context_level_filter: true
+  use_token_level_filter: true
+  force_tokens: ["\n", ., '?', '!']
+  force_reserve_digit: false
+  drop_consecutive: false
+  max_batch_size: 50
+  max_force_token: 100
+
+evaluate:
+  longbench_e_buckets: false

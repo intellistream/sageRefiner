@@ -1,28 +1,37 @@
 # sageRefiner
 
-**Intelligent Context Compression Algorithms for RAG Systems**
+**Intelligent Context Compression Library for LLM Systems**
 
-sageRefiner is a standalone Python library providing state-of-the-art context compression algorithms to reduce token usage while maintaining semantic quality in RAG (Retrieval-Augmented Generation) systems.
+sageRefiner provides state-of-the-art context compression algorithms to reduce token usage while
+maintaining semantic quality for Large Language Model applications.
 
 ## Features
 
-- **Multiple Compression Algorithms**
-  - **LongRefiner**: Advanced selective compression using LLM-based importance scoring
-  - **REFORM**: Efficient attention-based compression with KV cache optimization
-  - **Provence**: Sentence-level context pruning using DeBERTa-based scoring
-  
-- **High Compression Ratios**: Achieve 2-10x compression while preserving key information
-- **Flexible Configuration**: Easy-to-use YAML/dict-based configuration
+- **8 Compression Algorithms**
+
+  - **LongRefiner**: LLM-based selective compression with importance scoring
+  - **REFORM**: Attention-based compression with KV cache optimization
+  - **Provence**: Sentence-level pruning using DeBERTa reranker
+  - **LLMLingua2**: Fast BERT-based token classification
+  - **LongLLMLingua**: Question-aware perplexity-based compression
+  - **RECOMP-Abstractive**: T5-based summarization
+  - **RECOMP-Extractive**: BERT-based sentence selection
+  - **EHPC**: Evaluator Heads based efficient compression
+
+- **High Compression Ratios**: 2-10x compression while preserving key information
+
+- **Flexible Configuration**: YAML/dict-based configuration
+
 - **Production Ready**: Battle-tested in the SAGE framework
 
 ## Installation
 
 ```bash
-# From PyPI (coming soon)
-pip install sage-refiner
+# Basic installation
+pip install isage-refiner
 
-# From source
-pip install git+https://github.com/intellistream/sageRefiner.git
+# With vLLM support (for LongRefiner)
+pip install isage-refiner[vllm]
 
 # Development mode
 git clone https://github.com/intellistream/sageRefiner.git
@@ -33,152 +42,87 @@ pip install -e .
 ## Quick Start
 
 ```python
-from sage_refiner import LongRefinerCompressor, RefinerConfig
-
-# Configure the refiner
-config = RefinerConfig(
-    algorithm="long_refiner",
-    budget=2048,  # Target token count
-    base_model_path="Qwen/Qwen2.5-3B-Instruct",
-)
+from sage_refiner import LLMLingua2Compressor
 
 # Initialize compressor
-compressor = LongRefinerCompressor(
-    base_model_path=config.base_model_path,
-    max_model_len=25000,
-    gpu_memory_utilization=0.5,
-)
+compressor = LLMLingua2Compressor()
 
-# Compress documents
-query = "What are the benefits of exercise?"
-documents = [
-    {"contents": "Exercise improves cardiovascular health..."},
-    {"contents": "Regular physical activity boosts mental wellbeing..."},
-    # ... more documents
-]
-
+# Compress context
 result = compressor.compress(
-    question=query,
-    document_list=documents,
-    budget=2048,
+    context="Your long document text here...",
+    question="What is the main topic?",
+    target_token=500,
 )
 
-print(f"Original tokens: {result['original_tokens']}")
-print(f"Compressed tokens: {result['compressed_tokens']}")
-print(f"Compression ratio: {result['compression_rate']:.2f}")
-print(f"\nCompressed content:\n{result['compressed_context']}")
+print(f"Compression rate: {result['compression_rate']:.2%}")
+print(f"Compressed: {result['compressed_context']}")
 ```
 
 ## Algorithms
 
-### LongRefiner
-
-Based on selective compression with LLM-guided importance scoring. Best for:
-- High-quality compression with minimal information loss
-- Scenarios where semantic coherence is critical
-- Budget-constrained LLM applications
-
-**Key Parameters:**
-- `budget`: Target token count
-- `base_model_path`: HuggingFace model for compression
-- `compression_ratio`: Compression aggressiveness (0.0-1.0)
-
-### REFORM
-
-Efficient attention-based compression using attention head analysis. Best for:
-- Fast compression with lower compute requirements
-- Batch processing scenarios
-- When exact wording preservation is less critical
-
-**Key Parameters:**
-- `max_tokens`: Maximum tokens to keep
-- `selected_heads`: Attention heads for scoring
-- `use_kv_cache`: Enable KV cache optimization
-
-### Provence
-
-Sentence-level context pruning using DeBERTa-based relevance scoring. Best for:
-- Document-level pruning in RAG pipelines
-- When you need to filter out irrelevant documents
-- Scenarios with many retrieved documents
-
-**Key Parameters:**
-- `threshold`: Relevance threshold (0-1) for filtering
-- `reorder`: Whether to reorder by relevance score
-- `top_k`: Number of top documents to keep
+| Algorithm         | Model             | Best For                          |
+| ----------------- | ----------------- | --------------------------------- |
+| **LongRefiner**   | Qwen/Llama + LoRA | High-quality semantic compression |
+| **REFORM**        | Any Llama/Qwen    | Fast attention-based selection    |
+| **Provence**      | DeBERTa           | Document-level filtering          |
+| **LLMLingua2**    | BERT              | Speed-critical applications       |
+| **LongLLMLingua** | GPT-2/Llama       | Long document scenarios           |
+| **RECOMP-Abst**   | T5                | Summarization-style compression   |
+| **RECOMP-Extr**   | BERT              | Sentence extraction               |
+| **EHPC**          | Llama-8B          | Evaluator heads selection         |
 
 ## Configuration
 
 ```python
+from sage_refiner import RefinerConfig
+
 config = RefinerConfig(
-    algorithm="long_refiner",  # or "reform"
-    budget=2048,
-    base_model_path="Qwen/Qwen2.5-3B-Instruct",
-    
-    # LongRefiner specific
-    compression_ratio=0.5,
-    device="cuda",
+    algorithm="llmlingua2",
+    target_token=500,
+    force_tokens=["important", "keyword"],
 )
 ```
 
-## Architecture
+## Examples
 
-sageRefiner is designed as a standalone library that can be integrated into any Python application:
+```bash
+# Basic compression
+python examples/basic_compression.py
 
-```
-Your Application
-      ↓
-sageRefiner (this library)
-      ↓
-[LongRefiner | Reform] → Compressed Context
-      ↓
-Your LLM Pipeline
-```
-
-## Integration with SAGE
-
-This library is part of the [SAGE framework](https://github.com/intellistream/SAGE) ecosystem. For seamless integration with SAGE pipelines, use the `RefinerAdapter` in `sage-middleware`:
-
-```python
-# In SAGE environment
-from sage.middleware.components.sage_refiner import RefinerAdapter
-
-env.from_batch(...)
-   .map(ChromaRetriever, retriever_config)
-   .map(RefinerAdapter, refiner_config)  # Add compression step
-   .map(QAPromptor, promptor_config)
-   .sink(...)
+# Compare algorithms
+python examples/algorithm_comparison.py
 ```
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - PyTorch 2.0+
-- Transformers 4.30+
+- Transformers 4.43+
 
-## Examples
+## Benchmarking
 
-See the [examples/](examples/) directory for complete examples:
-- `basic_compression.py`: Simple compression workflow
-- `algorithm_comparison.py`: Compare different algorithms
-- `batch_processing.py`: Process multiple queries efficiently
+The `benchmarks` module provides a comprehensive evaluation framework for all compression algorithms:
 
-## Performance
+```bash
+# Quick comparison of multiple algorithms
+pip install isage-refiner[benchmark]
+sage-refiner-bench compare \
+    --algorithms baseline,longrefiner,reform,provence \
+    --samples 100
 
-Benchmark on common RAG datasets (RTX 3090):
+# Detailed evaluation with budget sweep
+sage-refiner-bench sweep \
+    --algorithm longrefiner \
+    --budgets 512,1024,2048,4096
+```
 
-| Algorithm    | Compression Ratio | Latency (avg) | Quality Score |
-|--------------|-------------------|---------------|---------------|
-| LongRefiner  | 3.2x              | 0.8s          | 0.92          |
-| Reform       | 2.5x              | 0.3s          | 0.87          |
+For detailed benchmarking documentation, see [benchmarks/README.md](benchmarks/README.md) and [benchmarks/STRUCTURE.md](benchmarks/STRUCTURE.md).
 
 ## Citation
 
-If you use sageRefiner in your research, please cite:
-
 ```bibtex
 @software{sageRefiner2025,
-  title = {sageRefiner: Intelligent Context Compression for RAG},
+  title = {sageRefiner: Context Compression for LLM},
   author = {SAGE Team},
   year = {2025},
   url = {https://github.com/intellistream/sageRefiner}
@@ -187,14 +131,9 @@ If you use sageRefiner in your research, please cite:
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE) for details.
-
-## Contributing
-
-Contributions welcome! Please see [CONTRIBUTING.md](https://github.com/intellistream/SAGE/blob/main/CONTRIBUTING.md) for guidelines.
+Apache License 2.0
 
 ## Links
 
-- **Documentation**: https://sage-docs.example.com (coming soon)
 - **SAGE Framework**: https://github.com/intellistream/SAGE
 - **Issues**: https://github.com/intellistream/sageRefiner/issues

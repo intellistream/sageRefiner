@@ -1,0 +1,416 @@
+# sageRefiner Copilot Development Guide
+
+This document guides GitHub Copilot and developers on best practices for contributing to sageRefiner.
+
+## Project Overview
+
+**sageRefiner** is a standalone Python library providing state-of-the-art context compression algorithms for RAG (Retrieval-Augmented Generation) systems. It was extracted from the SAGE framework to be independently usable across different projects.
+
+### Core Purpose
+- Reduce token usage in RAG pipelines while maintaining semantic quality
+- Provide multiple compression algorithms with different speed/quality trade-offs
+- Enable easy integration into SAGE and third-party systems
+
+### Key Statistics
+- **Languages**: Python 3.10+
+- **Dependencies**: torch, transformers, pydantic
+- **Supported Algorithms**: LongRefiner, REFORM, Provence, LLMLingua-2, LongLLMLingua
+- **Target Performance**: 2-5x compression ratio, <2s latency
+
+## Architecture Understanding
+
+### Three-Tier Organization
+
+**Level 1: Public API (`__init__.py`)**
+```python
+# User-facing exports - minimal, stable interface
+from sage_refiner import (
+    LongRefinerCompressor,
+    REFORMCompressor,
+    ProvenceCompressor,
+    RefinerConfig,
+    RefinerAlgorithm
+)
+```
+
+**Level 2: Configuration (`config.py`)**
+```python
+# Unified config management for all algorithms
+RefinerConfig(algorithm="long_refiner", budget=2048, ...)
+RefinerAlgorithm.LONG_REFINER  # Enum for type safety
+```
+
+**Level 3: Algorithm Implementations (`algorithms/`)**
+```
+algorithms/
+├── LongRefiner/        # Complex: 3-stage LLM-based pipeline
+├── reform/             # Fast: Attention-head based scoring
+├── provence/           # Balanced: Sentence-level pruning
+├── llmlingua2/         # BERT-based compression
+└── longllmlingua/      # Query-aware multi-granularity
+```
+
+### Data Flow Pattern
+
+```
+User Input
+  ↓
+RefinerConfig (validation & parameter passing)
+  ↓
+Specific Compressor Class (e.g., LongRefinerCompressor)
+  ↓
+Algorithm Implementation
+  ├─ Preprocessing (tokenization, parsing)
+  ├─ Scoring (relevance evaluation)
+  └─ Selection (budget-aware selection)
+  ↓
+Compressed Output
+  ├─ compressed_context: str
+  ├─ compression_rate: float
+  └─ metrics: dict
+```
+
+## Development Workflows
+
+### 1. Adding a New Compression Algorithm
+
+**Steps:**
+1. Create new directory under `algorithms/your_algorithm/`
+2. Implement core logic in `compressor.py`
+3. Add any utility modules (model_utils.py, operator.py, etc.)
+4. Create `__init__.py` with public exports
+5. Add algorithm to `RefinerAlgorithm` enum in `config.py`
+6. Export from main `__init__.py`
+7. Add tests in `tests/test_your_algorithm.py`
+8. Add example in `examples/`
+
+**Template Structure:**
+```python
+# algorithms/your_algorithm/compressor.py
+class YourCompressor:
+    def __init__(self, **kwargs):
+        """Initialize with config parameters"""
+        self.config = kwargs
+        self._load_models()
+    
+    def compress(self, question, document_list, budget):
+        """
+        Compress documents within token budget.
+        
+        Args:
+            question: Query string
+            document_list: List of dicts with "contents" key
+            budget: Target token count
+        
+        Returns:
+            dict with:
+                - compressed_context: str
+                - compressed_tokens: int
+                - original_tokens: int
+                - compression_rate: float
+        """
+        # Implementation
+        return {
+            'compressed_context': result,
+            'compressed_tokens': len(tokenizer.encode(result)),
+            'original_tokens': original_len,
+            'compression_rate': original_len / compressed_len
+        }
+```
+
+### 2. Optimizing an Existing Algorithm
+
+**Performance Profile First:**
+```bash
+# Add timing measurements
+import time
+start = time.time()
+# ... algorithm code ...
+print(f"Stage X took: {time.time() - start:.2f}s")
+```
+
+**Common Optimization Areas:**
+- Model loading (lazy load, cache)
+- Batch processing (increase batch_size)
+- GPU memory (reduce max_model_len, use int8/int4)
+- Tokenization (cache tokenizers, use fast versions)
+
+### 3. Fixing Compression Quality Issues
+
+**Debug Approach:**
+1. Check `compression_rate` - is it achieving target ratio?
+2. Verify `original_tokens` count is accurate
+3. Inspect `compressed_context` for semantic coherence
+4. Test with diverse query types
+5. Compare against baseline (simple truncation)
+
+**Quality Metrics to Track:**
+- Information retention (F1 on QA tasks)
+- Semantic similarity (cosine with original)
+- Token efficiency (tokens per semantic unit)
+
+## Code Standards
+
+### Type Hints (Required)
+```python
+# Good
+def compress(
+    self,
+    question: str,
+    document_list: list[dict[str, str]],
+    budget: int
+) -> dict[str, Any]:
+    """..."""
+    pass
+
+# Bad
+def compress(self, question, document_list, budget):
+    pass
+```
+
+### Documentation (Required for Public APIs)
+```python
+class LongRefinerCompressor:
+    """One-line summary.
+    
+    Extended description with algorithm overview.
+    
+    Attributes:
+        model: The underlying LLM model
+        config: Configuration dictionary
+    
+    Example:
+        >>> compressor = LongRefinerCompressor()
+        >>> result = compressor.compress("query", docs, 2048)
+        >>> print(result['compression_rate'])
+    """
+```
+
+### Import Organization
+```python
+# Standard library
+import json
+from typing import Any
+
+# Third-party
+import torch
+from transformers import AutoModel
+
+# Local
+from .config import RefinerConfig
+from .utils import tokenize_batch
+```
+
+### Error Handling
+```python
+# Good: Specific exceptions
+if len(documents) == 0:
+    raise ValueError("document_list cannot be empty")
+
+if budget < 100:
+    raise ValueError(f"budget must be >= 100, got {budget}")
+
+# Bad: Generic exceptions
+if not documents:
+    raise Exception("error")
+```
+
+### Logging Pattern
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+class MyCompressor:
+    def compress(self, ...):
+        logger.info(f"Starting compression with budget={budget}")
+        logger.debug(f"Loaded model with {self.model.parameters()} params")
+        logger.warning(f"Using fallback model: {fallback_name}")
+```
+
+## Testing Expectations
+
+### Unit Tests (Required)
+```python
+# tests/test_your_algorithm.py
+import pytest
+
+def test_config_creation():
+    """Config objects created correctly"""
+    config = RefinerConfig(algorithm="your_algo", budget=512)
+    assert config.budget == 512
+
+def test_compression_output_format():
+    """Output has required keys"""
+    result = compressor.compress(question, docs, 512)
+    assert 'compressed_context' in result
+    assert 'compression_rate' in result
+```
+
+### Integration Tests (Optional but Recommended)
+```python
+@pytest.mark.slow  # Mark slow tests
+def test_compression_with_real_model():
+    """Test with actual model (skipped by default)"""
+    compressor = LongRefinerCompressor()
+    result = compressor.compress(...)
+    assert result['compression_rate'] > 1.0
+```
+
+### Running Tests
+```bash
+# All tests
+pytest
+
+# Specific test file
+pytest tests/test_long_refiner.py
+
+# Specific test function
+pytest tests/test_long_refiner.py::test_config_creation
+
+# Exclude slow tests
+pytest -m "not slow"
+```
+
+## Common Patterns
+
+### Model Loading Pattern
+```python
+def _load_model(self, model_path: str):
+    """Load model with proper error handling"""
+    try:
+        model = AutoModel.from_pretrained(model_path)
+        logger.info(f"Loaded model from {model_path}")
+        return model
+    except Exception as e:
+        logger.error(f"Failed to load {model_path}: {e}")
+        raise
+```
+
+### Batch Processing Pattern
+```python
+def _process_batch(self, batch: list[str], batch_size: int = 32):
+    """Process items in batches for efficiency"""
+    results = []
+    for i in range(0, len(batch), batch_size):
+        chunk = batch[i:i+batch_size]
+        processed = self._process_chunk(chunk)
+        results.extend(processed)
+    return results
+```
+
+### Config Handling Pattern
+```python
+# In algorithm class
+def __init__(self, **config_dict):
+    # Accept dict for flexibility
+    self.budget = config_dict.get('budget', 2048)
+    self.device = config_dict.get('device', 'cuda')
+    self.timeout = config_dict.get('timeout', 60)
+```
+
+## Performance Benchmarking
+
+### Measuring Compression Ratio
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B")
+
+original_tokens = len(tokenizer.encode("original text"))
+compressed_tokens = len(tokenizer.encode("compressed text"))
+ratio = original_tokens / compressed_tokens  # Should be 2-5
+```
+
+### Measuring Latency
+```python
+import time
+
+start = time.perf_counter()
+result = compressor.compress(question, docs, budget)
+elapsed = time.perf_counter() - start
+print(f"Compression took {elapsed:.2f}s")  # Should be <2s
+```
+
+## Integration with SAGE Framework
+
+sageRefiner is designed for standalone use but integrates with SAGE via:
+
+1. **sage-middleware**: Uses `RefinerAdapter` to wrap sageRefiner in SAGE's component interface
+2. **Configuration**: SAGE configs map to RefinerConfig
+3. **Output Format**: Compression results fit into SAGE's data pipelines
+
+For SAGE integration questions, consult SAGE documentation, not sageRefiner internals.
+
+## Troubleshooting Guide
+
+### Issue: "Model not found on Hugging Face"
+- Ensure model path is correct (e.g., "Qwen/Qwen2.5-3B-Instruct")
+- Check internet connection and HF authentication
+- Verify model is public or you have access
+
+### Issue: "Out of memory"
+- Reduce `max_model_len` (e.g., 8192 instead of 25000)
+- Reduce `gpu_memory_utilization` (e.g., 0.5 instead of 0.7)
+- Use smaller base model
+- Enable 8-bit quantization if available
+
+### Issue: "Poor compression quality"
+- Increase `budget` (allow more tokens)
+- Check query is relevant to documents
+- Try different algorithm (LongRefiner for quality, REFORM for speed)
+- Verify tokenization matches your LLM
+
+### Issue: "Tests failing"
+```bash
+# Run with verbose output
+pytest -vv tests/test_file.py
+
+# Show print statements
+pytest -s tests/test_file.py
+
+# Stop on first failure
+pytest -x tests/test_file.py
+```
+
+## Contributing Guidelines
+
+### Before Implementing
+- Discuss design in issues/PRs
+- Understand existing algorithm patterns
+- Check if similar functionality exists
+
+### During Implementation
+- Follow type hints requirement
+- Add docstrings for public APIs
+- Write tests alongside code
+- Use descriptive variable names
+
+### Before Submitting
+- Run `pytest` - all tests pass
+- Check linting: `ruff check .`
+- Update examples if user-facing changes
+- Update docstrings and type hints
+
+## Dependencies & Versions
+
+### Core Dependencies
+- `torch>=2.0.0` - Deep learning framework
+- `transformers>=4.30.0` - HuggingFace models
+- `pydantic>=2.0.0` - Configuration validation
+
+### Development Dependencies
+- `pytest>=7.0.0` - Testing framework
+- `ruff>=0.4.0` - Code formatting and linting
+
+### Optional Dependencies
+- `vllm>=0.6.0` - Fast LLM inference (for LongRefiner)
+- `bitsandbytes` - Quantization support
+
+## References
+
+- **Repository**: https://github.com/intellistream/sageRefiner
+- **SAGE Framework**: https://github.com/intellistream/SAGE
+- **Python Style**: PEP 8, enforced by ruff
+- **Type Hints**: PEP 484
+- **Docstrings**: Google style format

@@ -19,23 +19,33 @@ VERSION = "0.1.0"
 
 # Core dependencies
 INSTALL_REQUIRES = [
-    "torch>=2.0.0",
+    "torch>=2.0.0,<3.0.0",
     "transformers>=4.52.0,<4.56.0",
-    "numpy>=1.24.0",
-    "pyyaml>=6.0",
+    "numpy>=1.24.0,<3.0.0",
+    "pyyaml>=6.0,<7.0",
     "json-repair>=0.30.0,<1.0.0",
+    "tqdm>=4.65.0",
 ]
 
 # Development dependencies
 EXTRAS_REQUIRE = {
     "vllm": [
-        "vllm>=0.9.2",
+        "vllm>=0.9.2,<0.13",
     ],
     "reranker": [
         "FlagEmbedding>=1.0.0",
     ],
+    "benchmark": [
+        # SAGE 生态组件将在 quickstart 中分阶段安装
+        # 数据分析和可视化
+        "scipy>=1.10.0",
+        "matplotlib>=3.7.0",
+        "pandas>=2.0.0",
+        "datasets>=2.14.0",
+        "pyarrow>=10.0.0",
+    ],
     "full": [
-        "vllm>=0.9.2",
+        "vllm>=0.9.2,<0.13",
         "FlagEmbedding>=1.0.0",
     ],
     "dev": [
@@ -43,6 +53,10 @@ EXTRAS_REQUIRE = {
         "pytest-cov>=4.0.0",
         "ruff>=0.1.0",
         "mypy>=1.0.0",
+        "scipy>=1.10.0",
+        "matplotlib>=3.7.0",
+        "pandas>=2.0.0",
+        "datasets>=2.14.0",
     ],
     "test": [
         "pytest>=7.0.0",
@@ -65,7 +79,7 @@ setup(
         "Documentation": "https://github.com/intellistream/SAGE/tree/main/docs",
     },
     packages=find_packages(exclude=["tests", "tests.*", "examples", "examples.*"]),
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
     classifiers=[

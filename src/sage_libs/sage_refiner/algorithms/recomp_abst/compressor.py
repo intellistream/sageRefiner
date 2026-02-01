@@ -177,7 +177,7 @@ class RECOMPAbstractiveCompressor:
             )
 
         # Decode
-        summary = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        summary: str = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         return summary.strip()
 

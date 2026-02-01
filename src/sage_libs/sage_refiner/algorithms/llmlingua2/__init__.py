@@ -20,16 +20,25 @@ References:
     arXiv preprint arXiv:2403.12968 (2024)
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import LLMLingua2Compressor
 
 __all__ = [
     "LLMLingua2Compressor",
 ]
 
-# Optional: SAGE operator (only available inside SAGE framework)
-try:
-    from .operator import LLMLingua2Operator
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import LLMLingua2RefinerOperator as _LLMLingua2RefinerOperator
 
-    __all__.append("LLMLingua2Operator")
+# Optional: SAGE operator (only available inside SAGE framework)
+LLMLingua2RefinerOperator: type[_LLMLingua2RefinerOperator] | None
+try:
+    from .operator import LLMLingua2RefinerOperator
+
+    __all__.append("LLMLingua2RefinerOperator")
 except ImportError:
-    LLMLingua2Operator = None
+    LLMLingua2RefinerOperator = None

@@ -9,10 +9,10 @@ Uses BERT-based token classification for fast and accurate prompt compression.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from typing import Any
+    pass
 
 from sage.common.core.functions import MapFunction as MapOperator
 
@@ -21,8 +21,8 @@ from .compressor import LLMLingua2Compressor
 logger = logging.getLogger(__name__)
 
 
-class LLMLingua2Operator(MapOperator):
-    """LLMLingua-2 Operator for SAGE Pipeline.
+class LLMLingua2RefinerOperator(MapOperator):
+    """LLMLingua-2 Refiner Operator for SAGE Pipeline.
 
     This operator wraps the LLMLingua-2 compression algorithm for use in
     SAGE RAG pipelines. It uses BERT-based token classification for fast
@@ -71,6 +71,8 @@ class LLMLingua2Operator(MapOperator):
         ... })
     """
 
+    _compressor: LLMLingua2Compressor | None
+
     def __init__(self, config: dict[str, Any], ctx: Any = None):
         """Initialize the LLMLingua-2 operator.
 
@@ -115,6 +117,12 @@ class LLMLingua2Operator(MapOperator):
         query = data.get("query", "")
         retrieval_results = data.get("retrieval_results", [])
 
+        # 如果 retrieval_results 为空，尝试从 context 字段获取（支持 LongBench 等数据源）
+        if not retrieval_results:
+            context = data.get("context", "")
+            if context:
+                retrieval_results = [context] if isinstance(context, str) else list(context)
+
         # Handle empty retrieval results
         if not retrieval_results:
             logger.warning(f"No retrieval results for query: '{query[:50]}...'")
@@ -152,6 +160,9 @@ class LLMLingua2Operator(MapOperator):
             drop_consecutive = self.cfg.get("drop_consecutive", False)
 
             # Perform compression
+            if self._compressor is None:
+                logger.error("Compressor not initialized")
+                return data
             compress_result = self._compressor.compress(
                 context=docs_text,
                 rate=rate,

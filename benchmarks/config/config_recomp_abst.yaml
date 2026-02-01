@@ -1,0 +1,48 @@
+pipeline:
+  name: sage-benchmark-recomp-abst-rag
+  description: RECOMP Abstractive RAG Pipeline (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+refiner:
+  # RECOMP Abstractive压缩配置
+  enabled: true  # 设为false即为baseline模式
+
+  # 模型配置
+  # 支持的模型:
+  # - fangyuan/nq_abstractive_compressor (NQ 数据集微调，推荐用于 NQ)
+  # - fangyuan/tqa_abstractive_compressor (TriviaQA 微调)
+  # - fangyuan/hotpotqa_abstractive (HotpotQA 微调)
+  # - google/flan-t5-base, google/flan-t5-large (通用摘要模型)
+  model_path: fangyuan/hotpotqa_abstractive
+  device: cuda                 # 运行设备 ("cuda", "cpu", 或 null 自动检测)
+
+  # 生成参数
+  max_source_length: 1024      # 输入最大长度（包含question和documents）
+  max_target_length: 512       # 生成摘要的最大长度
+  num_beams: 4                 # beam search的beam数量
+  length_penalty: 1.0          # 长度惩罚系数（>1.0鼓励更长输出，<1.0鼓励更短输出）
+  early_stopping: true         # 是否在所有beam完成后提前停止
+  no_repeat_ngram_size: 3      # 禁止重复的n-gram大小
+
+  # 可选：模型缓存目录
+  # cache_dir: "/path/to/model/cache"
+
+evaluate:
+  longbench_e_buckets: false

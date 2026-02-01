@@ -13,13 +13,22 @@ References:
     LongRefiner: Compress, Structure, and Select for Long-Context RAG
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .compressor import LongRefinerCompressor
 
 __all__ = [
     "LongRefinerCompressor",
 ]
 
+# Type hint for optional import
+if TYPE_CHECKING:
+    from .operator import LongRefinerOperator as _LongRefinerOperator
+
 # Optional: SAGE operator (only available inside SAGE framework)
+LongRefinerOperator: type[_LongRefinerOperator] | None
 try:
     from .operator import LongRefinerOperator
 

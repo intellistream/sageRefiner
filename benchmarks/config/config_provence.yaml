@@ -1,0 +1,35 @@
+pipeline:
+  name: sage-benchmark-provence-rag
+  description: Provence RAG Pipeline (LongBench)
+  version: 1.0.0
+
+source:
+  hf_dataset_name: THUDM/LongBench
+  hf_dataset_config: multifieldqa_en
+  hf_split: test
+  # max_samples: 20
+
+promptor:
+  platform: local
+
+generator:
+  vllm:
+    api_key: ''
+    method: openai
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://127.0.0.1:8000/v1
+    seed: 42
+
+refiner:
+  enabled: true
+  # Provence 使用专门的 DeBERTa-v3 模型，不是 LLM
+  model_name: naver/provence-reranker-debertav3-v1
+  threshold: 0.1
+  batch_size: 32
+  always_select_title: true
+  reorder: false
+  top_k: 5
+  device: cuda:0
+
+evaluate:
+  longbench_e_buckets: false
