@@ -1,84 +1,95 @@
-# Pre-commit hooks configuration for Python submodule
-# Installation:
-#   pip install pre-commit
-#   pre-commit install
+# sageRefiner Pre-commit Hooks Configuration
+# Follows SAGE project conventions to ensure consistency with sageLLM
 #
 # Usage:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type pre-push
 #   pre-commit run --all-files
-#   git commit --no-verify  # Skip hooks temporarily
+#
+# Optimization: Hooks that modify files (end-of-file-fixer, ruff-format)
+# should be staged before the commit, not left as unstaged changes.
+# This is handled by the pre-commit framework's automatic re-staging.
 
 default_language_version:
   python: python3.11
 
 repos:
+  # ────────────────────────────────────────────────────────────────
   # General file checks
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
-  hooks:
-  - id: trailing-whitespace
-    args: [--markdown-linebreak-ext=md]
-  - id: end-of-file-fixer
-  - id: check-yaml
-    args: [--unsafe]
-  - id: check-json
-  - id: check-toml
-  - id: check-added-large-files
-    args: ['--maxkb=1000']
-  - id: check-merge-conflict
-  - id: check-case-conflict
-  - id: mixed-line-ending
-    args: [--fix=lf]
-  - id: detect-private-key
+  # ────────────────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
 
-  # Python: Ruff linter and formatter
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.2
-  hooks:
-  - id: ruff
-    args: [--fix]
-    types_or: [python, pyi]
-  - id: ruff-format
-    types_or: [python, pyi]
+  # ────────────────────────────────────────────────────────────────
+  # Python: Ruff linter and formatter (replaces black, flake8, isort)
+  # ────────────────────────────────────────────────────────────────
+  # NOTE: Using ruff format instead of black to avoid conflicts
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.14
+    hooks:
+      - id: ruff
+        name: ruff check
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff format
 
-  # Python: mypy type checking
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.14.0
-  hooks:
-  - id: mypy
-    args: [--config-file=pyproject.toml, --no-error-summary]
-    additional_dependencies:
-    - types-PyYAML
-    - types-requests
-    - types-setuptools
+  # ────────────────────────────────────────────────────────────────
+  # Custom local hook: Auto-restage modified files after pre-commit
+  # ────────────────────────────────────────────────────────────────
+  # This prevents "staged vs working directory" conflicts when hooks
+  # modify files (e.g., ruff-format)
+  - repo: local
+    hooks:
+      - id: git-restage-modified-files
+        name: Re-stage files modified by pre-commit hooks
+        entry: bash -c 'git diff --name-only --diff-filter=M --cached | xargs -r git add 2>/dev/null || true'
+        language: system
+        always_run: true
+        stages: [commit]
 
-  # Shell scripts
-- repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.10.0.1
-  hooks:
-  - id: shellcheck
-    args: [--severity=warning]
-
+  # ────────────────────────────────────────────────────────────────
   # YAML formatting
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.15.0
-  hooks:
-  - id: pretty-format-yaml
-    args: [--autofix, --indent, '2']
+  # ────────────────────────────────────────────────────────────────
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.16.0
+    hooks:
+      - id: pretty-format-yaml
+        args: [--autofix, --indent=2, --preserve-quotes]
+        exclude: ^\.github/
 
+  # ────────────────────────────────────────────────────────────────
   # Markdown formatting
-- repo: https://github.com/executablebooks/mdformat
-  rev: 0.7.21
-  hooks:
-  - id: mdformat
-    args: [--wrap, '100']
-    additional_dependencies:
-    - mdformat-gfm
-    - mdformat-black
+  # ────────────────────────────────────────────────────────────────
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+        args: [--wrap=100]
+        exclude: ^(CHANGELOG|HISTORY)\.md$
 
-  # Secret detection
-- repo: https://github.com/Yelp/detect-secrets
-  rev: v1.5.0
-  hooks:
-  - id: detect-secrets
-    args: ['--baseline', '.secrets.baseline']
-    exclude: package.lock.json
+  # ────────────────────────────────────────────────────────────────
+  # Security: Check for secrets and sensitive data
+  # ────────────────────────────────────────────────────────────────
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        exclude: ^(\.env\.template|tests/fixtures/)

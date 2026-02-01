@@ -1,4 +1,18 @@
-name: CI Tests
+name: CI - Code Quality and Tests
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# CI Pipeline for sageRefiner
+#
+# Stages:
+#   1. Version Check: Verify ruff version consistency
+#   2. Code Quality: Run pre-commit hooks (linting, formatting, secrets)
+#   3. Unit Tests: Run pytest with coverage
+#
+# Triggers:
+#   - Pull requests to main/main-dev
+#   - Pushes to main/main-dev
+#
+# ═══════════════════════════════════════════════════════════════════════════
 
 on:
   push:
@@ -6,44 +20,126 @@ on:
   pull_request:
     branches: [main, main-dev]
 
+env:
+  PYTHON_VERSION: '3.11'
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[test]"
-
-    - name: Run tests
-      run: |
-        pytest tests/ -v --tb=short
-
-  lint:
+  # ─────────────────────────────────────────────────────────────────────
+  # Stage 0: Version Check
+  # ─────────────────────────────────────────────────────────────────────
+  version-check:
+    name: Version Consistency Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Check ruff version consistency
+        run: |
+          echo "Checking ruff version consistency between local and pre-commit..."
+          
+          # Get local ruff version (if installed)
+          if command -v ruff &> /dev/null; then
+            LOCAL_RUFF=$(ruff --version | awk '{print $2}')
+            echo "Local ruff: v$LOCAL_RUFF"
+          else
+            echo "Local ruff not installed (OK, will be installed by pre-commit)"
+            exit 0
+          fi
 
-    - name: Install linters
-      run: |
-        python -m pip install --upgrade pip
-        pip install ruff
+          # Get pre-commit config ruff version
+          if [ -f .pre-commit-config.yaml ]; then
+            PRECOMMIT_RUFF=$(grep -A 2 'ruff-pre-commit' .pre-commit-config.yaml | grep 'rev:' | awk '{print $2}' | sed 's/v//')
+            echo "Pre-commit ruff: v$PRECOMMIT_RUFF"
 
-    - name: Run ruff check
-      run: ruff check sage_refiner/
+            # Compare versions
+            if [ "$LOCAL_RUFF" != "$PRECOMMIT_RUFF" ]; then
+              echo "::error::❌ Version mismatch! Local ruff ($LOCAL_RUFF) != pre-commit ruff (v$PRECOMMIT_RUFF)"
+              echo ""
+              echo "To fix this, run:"
+              echo "  pip install ruff==$PRECOMMIT_RUFF"
+              echo "Or update .pre-commit-config.yaml:"
+              echo "  pre-commit autoupdate"
+              exit 1
+            fi
 
-    - name: Run ruff format check
-      run: ruff format --check sage_refiner/
+            echo "✅ Versions match: $LOCAL_RUFF"
+          else
+            echo "⚠️  No .pre-commit-config.yaml found, skipping check"
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Stage 1: Code Quality (uses pre-commit)
+  # ─────────────────────────────────────────────────────────────────────
+  code-quality:
+    name: Code Quality (Pre-commit)
+    runs-on: ubuntu-latest
+    needs: version-check
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for pre-commit
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit (PR - changed files only)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD
+
+      - name: Run pre-commit (Push - all files)
+        if: github.event_name != 'pull_request'
+        run: pre-commit run --all-files
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Stage 2: Unit Tests
+  # ─────────────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: code-quality
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short --cov=src/sage_libs/sage_refiner --cov-report=term --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-${{ matrix.python-version }}
+          fail_ci_if_error: false
+
