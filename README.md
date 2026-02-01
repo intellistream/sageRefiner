@@ -101,7 +101,8 @@ python examples/algorithm_comparison.py
 
 ## Benchmarking
 
-The `benchmarks` module provides a comprehensive evaluation framework for all compression algorithms:
+The `benchmarks` module provides a comprehensive evaluation framework for all compression
+algorithms:
 
 ```bash
 # Quick comparison of multiple algorithms
@@ -116,7 +117,8 @@ sage-refiner-bench sweep \
     --budgets 512,1024,2048,4096
 ```
 
-For detailed benchmarking documentation, see [benchmarks/README.md](benchmarks/README.md) and [benchmarks/STRUCTURE.md](benchmarks/STRUCTURE.md).
+For detailed benchmarking documentation, see [benchmarks/README.md](benchmarks/README.md) and
+[benchmarks/STRUCTURE.md](benchmarks/STRUCTURE.md).
 
 ## Citation
 
@@ -137,3 +139,16 @@ Apache License 2.0
 
 - **SAGE Framework**: https://github.com/intellistream/SAGE
 - **Issues**: https://github.com/intellistream/sageRefiner/issues
+
+## Documentation & Development
+
+- **[Development Guide](docs/README.md)** - Setup, workflow, and guidelines
+- **[Pre-commit Hooks](docs/PRE_COMMIT.md)** - Setup and usage guide
+- **[CI/CD Pipeline](docs/HOOKS_SETUP.md)** - Automated checks details
+
+For quick setup:
+
+```bash
+bash utils/installation/quickstart.sh    # Full installation
+bash utils/hooks/setup-hooks.sh          # Setup pre-commit hooks
+```
