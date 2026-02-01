@@ -1,10 +1,10 @@
-# Benchmark Refiner
+# Benchmarks
 
 **Refiner 算法评测套件** - 用于评测各种上下文压缩算法在 RAG 场景下的性能。
 
 ## 概述
 
-`benchmark_refiner` 提供了一套完整的 Refiner 算法评测框架，包括：
+`benchmarks` 提供了一套完整的 Refiner 算法评测框架，包括：
 
 - 多种 SOTA 压缩算法的评测 Pipeline
 - 注意力头分析工具（用于 REFORM 等方法）

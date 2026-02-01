@@ -99,6 +99,25 @@ python examples/algorithm_comparison.py
 - PyTorch 2.0+
 - Transformers 4.43+
 
+## Benchmarking
+
+The `benchmarks` module provides a comprehensive evaluation framework for all compression algorithms:
+
+```bash
+# Quick comparison of multiple algorithms
+pip install isage-refiner[benchmark]
+sage-refiner-bench compare \
+    --algorithms baseline,longrefiner,reform,provence \
+    --samples 100
+
+# Detailed evaluation with budget sweep
+sage-refiner-bench sweep \
+    --algorithm longrefiner \
+    --budgets 512,1024,2048,4096
+```
+
+For detailed benchmarking documentation, see [benchmarks/README.md](benchmarks/README.md) and [benchmarks/STRUCTURE.md](benchmarks/STRUCTURE.md).
+
 ## Citation
 
 ```bibtex
