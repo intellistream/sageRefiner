@@ -7,6 +7,7 @@ This directory contains all documentation for sageRefiner.
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Development setup and guidelines
 - **[PRE_COMMIT.md](./PRE_COMMIT.md)** - Pre-commit hooks setup and usage guide
 - **[HOOKS_SETUP.md](./HOOKS_SETUP.md)** - Implementation summary of hooks and CI/CD improvements
+- **[RELEASE.md](./RELEASE.md)** - Release and PyPI publishing guide
 
 ## Quick Links
 
@@ -20,6 +21,7 @@ This directory contains all documentation for sageRefiner.
 
 - [Hooks Implementation Details](./HOOKS_SETUP.md)
 - [CI/CD Pipeline](./HOOKS_SETUP.md#cicd-pipeline-improvements)
+- [Release & Publishing](./RELEASE.md)
 - [Version Management](./HOOKS_SETUP.md#key-benefits)
 
 ## Related Documents
