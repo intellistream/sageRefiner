@@ -31,6 +31,11 @@ dependencies = [
     "pyyaml>=6.0,<7.0",
     "json-repair>=0.30.0,<1.0.0",
     "tqdm>=4.65.0",
+    # SAGE framework (required for operators)
+    "isage-common",
+    "isage-kernel",
+    "isage-libs",
+    "isage-middleware",
 ]
 
 [project.optional-dependencies]
@@ -41,14 +46,11 @@ reranker = [
     "FlagEmbedding>=1.0.0",
 ]
 benchmark = [
-    # SAGE 生态组件
-    "isage-common[embedding]",
-    "isage-kernel",
-    "isage-libs",
-    "isage-middleware",
-    "isage-benchmark[longbench]",       # LongBench 评测组件
+    # Benchmark-specific SAGE components
+    "isage-common[embedding]",  # Embedding extras for benchmarks
+    "isage-benchmark[longbench]",  # LongBench evaluation components
 
-    # 数据分析和可视化
+    # Data analysis and visualization
     "scipy>=1.10.0",
     "matplotlib>=3.7.0",
     "pandas>=2.0.0",
@@ -77,11 +79,8 @@ test = [
     "matplotlib>=3.7.0",
     "pandas>=2.0.0",
     "datasets>=2.14.0",
-    # SAGE components (required by benchmarks module)
+    # Benchmark-specific SAGE components
     "isage-common[embedding]",
-    "isage-kernel",
-    "isage-libs",
-    "isage-middleware",
     "isage-benchmark[longbench]",
 ]
 
@@ -92,6 +91,7 @@ Repository = "https://github.com/intellistream/sageRefiner"
 "Bug Tracker" = "https://github.com/intellistream/sageRefiner/issues"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 exclude = ["tests*", "examples*", "benchmarks*"]
 
 [tool.black]
