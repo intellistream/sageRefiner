@@ -26,11 +26,12 @@ classifiers = [
 
 dependencies = [
     "torch>=2.0.0,<3.0.0",
-    "transformers>=4.52.0,<4.56.0",
+    "transformers>=4.52.0,<4.54.0",  # Aligned with isage-apps compatibility
     "numpy>=1.24.0,<3.0.0",
     "pyyaml>=6.0,<7.0",
     "json-repair>=0.30.0,<1.0.0",
     "tqdm>=4.65.0",
+    "rich>=13.0.0,<14.0.0",  # Aligned with isage-tools/isage-cli compatibility
     # SAGE framework (required for operators)
     "isage-common",
     "isage-kernel",
