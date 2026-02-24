@@ -7,6 +7,10 @@ tools: ['vscode', 'execute', 'read', 'agent', 'edit', 'search', 'web', 'todo', '
 
 This agent specializes in developing and maintaining **sageRefiner**, a standalone Python library for intelligent context compression in RAG (Retrieval-Augmented Generation) systems. sageRefiner was extracted from the SAGE framework as an independent module to provide reusable compression algorithms.
 
+## Environment Rule
+
+- Do not create new local virtual environments (`venv`/`.venv`); use the existing configured Python environment.
+
 ## What This Agent Does
 
 ### Core Responsibilities
