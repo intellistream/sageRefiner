@@ -1,114 +1,183 @@
 #!/bin/bash
-# sageRefiner Pre-push Hook
-# ═══════════════════════════════════════════════════════════════════════════
+# Pre-push hook — block main push + optional PyPI publish
 #
-# Purpose: Validate code quality and tests before pushing to remote
+# Flow:
+#   1. Block direct push to main branch
+#   2. Display current version
+#   3. Check if version already exists on PyPI
+#   4. Offer to publish after push completes (background job)
 #
-# This hook prevents pushing code that:
-#   1. Has uncommitted changes
-#   2. Fails local tests
-#   3. Has import errors
-#
-# Installation:
-#   ln -sf ../../utils/hooks/pre-push-hook.sh .git/hooks/pre-push
-#   chmod +x .git/hooks/pre-push
-#
-# Skip this hook temporarily:
-#   git push --no-verify
-#
-# ═══════════════════════════════════════════════════════════════════════════
+# Version bumping is handled entirely by the post-commit hook.
+# This hook NEVER bumps version or creates additional commits.
+# → Single push only, no double-push.
 
-set -e
+# Recursion guard (unused now, kept for safety)
+if [ "${_SAGELLM_PP_RUNNING:-0}" = "1" ]; then
+    exit 0
+fi
 
-# Color codes for output
+# Publish mode: "private" for most repos, "public" for sage-pypi-publisher
+PUBLISH_MODE=private
+
+# Colors
 RED='\033[0;31m'
-GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+DIM='\033[2m'
+NC='\033[0m'
 
-# Configuration
-REMOTE="$1"
-URL="$2"
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REPO_DIR="$(pwd)"
+REPO_NAME="$(basename "$REPO_DIR")"
+PUBLISH_LOG="/tmp/${REPO_NAME}-publish-$$.log"
 
-# Helper functions
-print_header() {
-    echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-}
+# --- Block direct push to main ---
+block_main_push=false
+while read -r local_ref local_sha remote_ref remote_sha; do
+    if [ "$local_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/main" ]; then
+        block_main_push=true
+        break
+    fi
+done
 
-print_success() {
-    echo -e "${GREEN}✓ $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}✗ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠ $1${NC}"
-}
-
-# Check 1: Ensure working directory is clean
-print_header "Pre-Push Validation (Branch: $BRANCH → $REMOTE)"
-
-if ! git diff-index --quiet HEAD --; then
-    print_error "Uncommitted changes detected"
-    echo "Please commit or stash your changes before pushing"
+if [ "$block_main_push" = true ]; then
+    echo -e "${RED}✗ Direct push to main is forbidden${NC}"
+    echo -e "${YELLOW}  Please push to a feature branch and merge via PR.${NC}"
     exit 1
 fi
-print_success "Working directory clean"
 
-# Check 2: Verify no syntax errors in Python files
-print_header "Checking Python Syntax"
-
-python_files=$(git diff --name-only HEAD~1..HEAD -- "*.py" 2>/dev/null || echo "")
-if [ -n "$python_files" ]; then
-    if python3 -m py_compile $python_files 2>/dev/null; then
-        print_success "No Python syntax errors"
+# Safe read: falls back to default if /dev/tty is unavailable (SSH, IDE, etc.)
+safe_read() {
+    local varname="$1"
+    local default="$2"
+    if [ -t 0 ] || [ -c /dev/tty ] 2>/dev/null; then
+        read -r "$varname" </dev/tty 2>/dev/null || eval "$varname=\"$default\""
     else
-        print_error "Python syntax errors detected"
-        exit 1
+        eval "$varname=\"$default\""
     fi
-fi
+}
 
-# Check 3: Run quick import validation
-print_header "Validating Module Imports"
+# Find _version.py — single source of truth
+find_version_file() {
+    find . -maxdepth 4 -name '_version.py' \
+        -not -path '*/node_modules/*' \
+        -not -path '*/.git/*' \
+        -not -path '*/dist/*' \
+        -not -path '*/.egg-info/*' \
+        -not -path '*/build/*' \
+        2>/dev/null | head -1
+}
 
-if python3 -c "from sage_refiner import *; print('  All imports validated')" 2>/dev/null; then
-    print_success "Core module imports valid"
-else
-    print_warning "Could not fully validate imports (might need install)"
-fi
+# Schedule PyPI publish as background job after push completes
+schedule_publish() {
+    local version="$1"
+    local package="$2"
 
-# Check 4: Verify no test failures (optional, can be slow)
-if [ "$SKIP_TESTS" != "true" ]; then
-    print_header "Running Quick Tests"
-    
-    if command -v pytest &> /dev/null; then
-        if pytest tests/ -x -q --tb=no 2>/dev/null; then
-            print_success "Tests passed"
+    if ! command -v sage-pypi-publisher &> /dev/null; then
+        echo -e "${YELLOW}⚠ sage-pypi-publisher not found, skipping auto-publish${NC}"
+        echo -e "${DIM}  Install: pip install isage-pypi-publisher${NC}"
+        return
+    fi
+
+    echo -e "${GREEN}📦 PyPI publish scheduled (runs after push)${NC}"
+    echo -e "${DIM}  Log: tail -f ${PUBLISH_LOG}${NC}"
+
+    (
+        # Wait for parent git push to finish
+        GIT_PID="$PPID"
+        while kill -0 "$GIT_PID" 2>/dev/null; do
+            sleep 1
+        done
+        sleep 1
+
+        cd "$REPO_DIR" || exit 1
+
+        {
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📦 Post-push: Building ${package} ${version}..."
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+            rm -rf dist/ build/ *.egg-info 2>/dev/null || true
+
+            if sage-pypi-publisher build . --upload --no-dry-run --mode ${PUBLISH_MODE}; then
+                echo ""
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "✓ Successfully uploaded ${package} ${version} to PyPI"
+                echo "🔗 https://pypi.org/project/${package}/${version}/"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            else
+                echo ""
+                echo "✗ Failed to upload to PyPI (exit code: $?)"
+                echo "  Re-run manually: sage-pypi-publisher build . --upload --no-dry-run --mode ${PUBLISH_MODE}"
+            fi
+        } >> "$PUBLISH_LOG" 2>&1
+
+        # Print summary to terminal (user sees it after push output)
+        if grep -q "Successfully uploaded" "$PUBLISH_LOG" 2>/dev/null; then
+            echo -e "\n${GREEN}✓ PyPI: ${package} ${version} published${NC}"
         else
-            print_warning "Some tests failed. Push anyway? (use --no-verify to skip)"
-            # Don't exit here - let user decide
+            echo -e "\n${RED}✗ PyPI publish failed. See: ${PUBLISH_LOG}${NC}"
         fi
-    else
-        print_warning "pytest not found, skipping tests"
+    ) &
+    disown
+}
+
+# --- Main Logic ---
+
+if [ ! -f pyproject.toml ]; then
+    exit 0
+fi
+
+PACKAGE_NAME=$(grep -oP '^name = "\K[^"]+' pyproject.toml 2>/dev/null || echo "unknown")
+
+# Get version from _version.py (single source of truth)
+VERSION_FILE=$(find_version_file)
+CURRENT_VERSION=""
+if [ -n "$VERSION_FILE" ]; then
+    CURRENT_VERSION=$(grep -oP '__version__ = "\K[^"]+' "$VERSION_FILE" 2>/dev/null || true)
+fi
+
+if [ -z "$CURRENT_VERSION" ]; then
+    exit 0
+fi
+
+echo -e "${GREEN}✓ [${REPO_NAME}] Version: ${CURRENT_VERSION}${NC}"
+
+# Quick PyPI check (5s timeout, non-blocking)
+PYPI_CHECK_RESULT=1
+if [ "$PACKAGE_NAME" != "unknown" ] && command -v python3 &> /dev/null; then
+    python3 - "$PACKAGE_NAME" "$CURRENT_VERSION" <<'PY' && PYPI_CHECK_RESULT=0 || PYPI_CHECK_RESULT=$?
+import json, sys, urllib.request
+try:
+    with urllib.request.urlopen(f"https://pypi.org/pypi/{sys.argv[1]}/json", timeout=5) as r:
+        sys.exit(0 if sys.argv[2] in json.load(r).get("releases", {}) else 1)
+except urllib.error.HTTPError as e:
+    sys.exit(1 if e.code == 404 else 2)
+except (urllib.error.URLError, OSError, TimeoutError):
+    sys.exit(2)
+except Exception:
+    sys.exit(2)
+PY
+fi
+
+if [ "$PYPI_CHECK_RESULT" -eq 0 ]; then
+    echo -e "${YELLOW}⚠ ${PACKAGE_NAME} ${CURRENT_VERSION} already on PyPI — skipping publish${NC}"
+elif [ "$PYPI_CHECK_RESULT" -eq 2 ]; then
+    echo -e "${DIM}(PyPI check skipped — network/timeout issue)${NC}"
+    echo -e "${BLUE}📦 Publish ${CURRENT_VERSION} to PyPI after push? [Y/n]:${NC}"
+    safe_read response "y"
+    if [[ ! "$response" =~ ^[Nn]$ ]]; then
+        schedule_publish "$CURRENT_VERSION" "$PACKAGE_NAME"
+    fi
+else
+    # Version not on PyPI — offer to publish
+    echo -e "${BLUE}📦 Publish ${CURRENT_VERSION} to PyPI after push? [Y/n]:${NC}"
+    safe_read response "y"
+    if [[ ! "$response" =~ ^[Nn]$ ]]; then
+        schedule_publish "$CURRENT_VERSION" "$PACKAGE_NAME"
     fi
 fi
 
-# Check 5: Verify branch protection rules
-print_header "Branch Protection Checks"
-
-# Warn if pushing to protected branches without PR
-if [[ "$BRANCH" == "main" || "$BRANCH" == "main-dev" ]]; then
-    print_warning "You are about to push to '$BRANCH' branch"
-    echo "Consider using a feature branch and creating a Pull Request instead."
-fi
-
-print_success "Pre-push validation complete"
-print_header "Ready to push $BRANCH to $REMOTE"
-
+# Exit 0 → push proceeds immediately, never blocked by build/upload
 exit 0
