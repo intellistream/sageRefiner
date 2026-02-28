@@ -132,7 +132,7 @@ print(result['compression_rate'])
 
 - **SAGE Framework**: Via `sage-middleware` RefinerAdapter component
 - **HuggingFace Hub**: Model loading from HF (Qwen, LLaMA, DeBERTa, etc.)
-- **vLLM**: Optional fast LLM inference for LongRefiner
+- **sageLLM / Transformers backend**: Inference backend for LongRefiner
 - **Custom Pipelines**: Standalone library, can be used independently
 
 ## Performance Metrics to Track
@@ -159,3 +159,9 @@ When working on complex tasks:
 - **Show Examples**: Include code samples for complex features
 - **Incremental Progress**: Report completion of logical units, not entire projects
 - **Ask Clarifications**: When requirements are ambiguous, ask for specifics before implementation
+
+## Polyrepo coordination rules
+
+- Treat this repository as the only local source tree; do not assume sibling repositories exist.
+- If a task spans multiple repositories, implement only this repo and explicitly list follow-up repo/version-bump actions.
+- Do not create `venv`/`.venv`; always use the existing configured Python environment.
