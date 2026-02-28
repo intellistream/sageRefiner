@@ -134,7 +134,7 @@ class TestLongRefinerMocked:
 
     @pytest.fixture
     def mock_model(self):
-        """Create a mock vLLM model."""
+        """Create a mock inference model."""
         model = MagicMock()
 
         # 模拟 generate 输出

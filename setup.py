@@ -29,9 +29,6 @@ INSTALL_REQUIRES = [
 
 # Development dependencies
 EXTRAS_REQUIRE = {
-    "vllm": [
-        "vllm>=0.9.2,<0.13",
-    ],
     "reranker": [
         "FlagEmbedding>=1.0.0",
     ],
@@ -45,7 +42,6 @@ EXTRAS_REQUIRE = {
         "pyarrow>=10.0.0",
     ],
     "full": [
-        "vllm>=0.9.2,<0.13",
         "FlagEmbedding>=1.0.0",
     ],
     "dev": [

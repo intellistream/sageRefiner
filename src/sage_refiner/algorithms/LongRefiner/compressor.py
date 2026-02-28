@@ -15,14 +15,12 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 import json_repair
-import numpy as np
 import torch
 from tqdm import tqdm
-from transformers import AutoModel, AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModel, AutoModelForCausalLM, AutoModelForSequenceClassification, AutoTokenizer
 
-# 延迟导入 vLLM（仅在类型检查或实际使用时导入）
 if TYPE_CHECKING:
-    pass
+    from peft import PeftModel
 
 # 抑制 tokenizer 截断警告（这是预期行为，不需要 overflowing tokens）
 warnings.filterwarnings("ignore", message=".*overflowing tokens are not returned.*")
@@ -84,61 +82,142 @@ class LongRefinerCompressor:
         max_model_len: int = 25000,
         gpu_memory_utilization: float = 0.5,
     ):
-        """Load the trained refinement model with LoRA adapters"""
-        try:
-            from vllm import LLM, SamplingParams
-            from vllm.lora.request import LoRARequest
-        except ImportError as e:
-            raise ImportError(
-                "LongRefiner requires vLLM. Please install it with: "
-                "pip install 'isage-middleware[vllm]' or pip install vllm"
-            ) from e
+        """Load the trained refinement model with optional PEFT LoRA adapters."""
+        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        model_kwargs: dict[str, Any] = {
+            "torch_dtype": dtype,
+        }
+        if torch.cuda.is_available():
+            model_kwargs.update(
+                {
+                    "device_map": "auto",
+                    "max_memory": {
+                        0: f"{max(1, int(gpu_memory_utilization * 100))}%",
+                    },
+                }
+            )
 
-        self.model = LLM(
-            base_model_path,
-            enable_lora=True,
-            max_model_len=max_model_len,
-            gpu_memory_utilization=gpu_memory_utilization,
-        )
+        self.model = AutoModelForCausalLM.from_pretrained(base_model_path, **model_kwargs)
+        if not torch.cuda.is_available():
+            self.model = self.model.to("cpu")
+        self.model.eval()
+
         self.tokenizer = AutoTokenizer.from_pretrained(base_model_path)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        self._has_peft_adapters = False
+        self._peft_model: PeftModel | None = None
+
+        adapter_paths = {
+            "query_analysis": query_analysis_module_lora_path,
+            "doc_structuring": doc_structuring_module_lora_path,
+            "global_selection": global_selection_module_lora_path,
+        }
+        non_empty_adapters = {k: v for k, v in adapter_paths.items() if v}
+        if non_empty_adapters:
+            try:
+                from peft import PeftModel
+            except ImportError as e:
+                raise ImportError(
+                    "LongRefiner LoRA adapters require PEFT. Install with: pip install peft"
+                ) from e
+
+            first_name, first_path = next(iter(non_empty_adapters.items()))
+            peft_model = PeftModel.from_pretrained(self.model, first_path, adapter_name=first_name)
+            for adapter_name, adapter_path in non_empty_adapters.items():
+                if adapter_name == first_name:
+                    continue
+                peft_model.load_adapter(adapter_path, adapter_name=adapter_name)
+            self.model = peft_model
+            self._peft_model = peft_model
+            self._has_peft_adapters = True
+
         self.step_to_config = {
             "query_analysis": {
                 "lora_path": query_analysis_module_lora_path,
-                "lora_request": LoRARequest(
-                    lora_name="query_analysis",
-                    lora_int_id=1,
-                    lora_path=query_analysis_module_lora_path,
-                ),
-                "sampling_params": SamplingParams(temperature=0, max_tokens=2, logprobs=20),
+                "adapter_name": "query_analysis" if query_analysis_module_lora_path else None,
+                "generation_config": {"temperature": 0.0, "max_new_tokens": 2},
                 "prompt_template": PromptTemplate(
                     self.tokenizer, system_prompt=SYSTEM_PROMPT_STEP1, user_prompt=USER_PROMPT_STEP1
                 ),
             },
             "doc_structuring": {
                 "lora_path": doc_structuring_module_lora_path,
-                "lora_request": LoRARequest(
-                    lora_name="doc_structuring",
-                    lora_int_id=2,
-                    lora_path=doc_structuring_module_lora_path,
-                ),
-                "sampling_params": SamplingParams(temperature=0, max_tokens=10000),
+                "adapter_name": "doc_structuring" if doc_structuring_module_lora_path else None,
+                "generation_config": {"temperature": 0.0, "max_new_tokens": 10000},
                 "prompt_template": PromptTemplate(
                     self.tokenizer, system_prompt=SYSTEM_PROMPT_STEP2, user_prompt=USER_PROMPT_STEP2
                 ),
             },
             "global_selection": {
                 "lora_path": global_selection_module_lora_path,
-                "lora_request": LoRARequest(
-                    lora_name="global_selection",
-                    lora_int_id=3,
-                    lora_path=global_selection_module_lora_path,
-                ),
-                "sampling_params": SamplingParams(temperature=0, max_tokens=10000),
+                "adapter_name": "global_selection" if global_selection_module_lora_path else None,
+                "generation_config": {"temperature": 0.0, "max_new_tokens": 10000},
                 "prompt_template": PromptTemplate(
                     self.tokenizer, system_prompt=SYSTEM_PROMPT_STEP3, user_prompt=USER_PROMPT_STEP3
                 ),
             },
         }
+
+    def _set_active_adapter(self, step_name: str) -> None:
+        if not self._has_peft_adapters or self._peft_model is None:
+            return
+        adapter_name = self.step_to_config[step_name].get("adapter_name")
+        if adapter_name:
+            self._peft_model.set_adapter(adapter_name)
+
+    def _generate_with_config(
+        self, step_name: str, prompt_list: list[str], need_scores: bool = False
+    ) -> tuple[list[str], list[torch.Tensor] | None]:
+        """Generate texts with configured backend and optional token scores."""
+        self._set_active_adapter(step_name)
+        generation_config = self.step_to_config[step_name]["generation_config"]
+
+        temperature = float(generation_config.get("temperature", 0.0))
+        max_new_tokens = int(generation_config.get("max_new_tokens", 256))
+        do_sample = temperature > 0
+        generation_kwargs: dict[str, Any] = {
+            "max_new_tokens": max_new_tokens,
+            "do_sample": do_sample,
+            "pad_token_id": self.tokenizer.eos_token_id,
+            "return_dict_in_generate": True,
+            "output_scores": need_scores,
+        }
+        if do_sample:
+            generation_kwargs["temperature"] = temperature
+
+        all_texts: list[str] = []
+        all_first_scores: list[torch.Tensor] = []
+        batch_size = 4
+
+        for idx in range(0, len(prompt_list), batch_size):
+            batch_prompts = prompt_list[idx : idx + batch_size]
+            model_inputs = self.tokenizer(
+                batch_prompts,
+                padding=True,
+                truncation=False,
+                return_tensors="pt",
+            )
+
+            model_device = self.model.device
+            model_inputs = {k: v.to(model_device) for k, v in model_inputs.items()}
+            with torch.no_grad():
+                outputs = self.model.generate(**model_inputs, **generation_kwargs)
+
+            prompt_lengths = model_inputs["attention_mask"].sum(dim=1).tolist()
+            for item_idx, sequence in enumerate(outputs.sequences):
+                prompt_len = int(prompt_lengths[item_idx])
+                generated_ids = sequence[prompt_len:]
+                generated_text = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+                all_texts.append(generated_text)
+
+            if need_scores and outputs.scores:
+                first_step_scores = outputs.scores[0].detach().cpu()
+                for item_idx in range(first_step_scores.shape[0]):
+                    all_first_scores.append(first_step_scores[item_idx])
+
+        return all_texts, all_first_scores if need_scores else None
 
     def _load_score_model(self, score_model_name: str, score_model_path: str):
         """Load the scoring model for local relevance"""
@@ -358,28 +437,30 @@ class LongRefinerCompressor:
         """
         # Get special token IDs
         special_token = ["Local", "Global"]
-        id2special = {self.tokenizer.encode(token)[0]: token for token in special_token}
+        token_to_id = {
+            token: self.tokenizer.encode(token, add_special_tokens=False)[0] for token in special_token
+        }
 
         # Get config
         prompt_template = self.step_to_config["query_analysis"]["prompt_template"]
-        sampling_params = self.step_to_config["query_analysis"]["sampling_params"]
-        lora_request = self.step_to_config["query_analysis"]["lora_request"]
 
         prompt_list = [prompt_template.get_prompt(question=question) for question in question_list]
-        output_list = self.model.generate(
-            prompt_list, sampling_params=sampling_params, lora_request=lora_request
+        _texts, score_list = self._generate_with_config(
+            step_name="query_analysis", prompt_list=prompt_list, need_scores=True
         )
+        assert score_list is not None
 
         query_analysis_result = []
-        for output in output_list:
+        for first_step_logits in score_list:
             # Initialize prob for special tokens
-            special_token_prob = dict.fromkeys(special_token, -100)
-            logprobs = output.outputs[0].logprobs[1]
-            for token_id, logprob in logprobs.items():
-                if token_id in id2special:
-                    special_token_prob[id2special[token_id]] = logprob.logprob
-            for k, v in special_token_prob.items():
-                special_token_prob[k] = np.exp(v)
+            probs = torch.softmax(first_step_logits, dim=-1)
+            special_token_prob = {}
+            for token in special_token:
+                token_id = token_to_id[token]
+                if token_id < probs.shape[0]:
+                    special_token_prob[token] = float(probs[token_id].item())
+                else:
+                    special_token_prob[token] = 0.0
             query_analysis_result.append(special_token_prob)
         return query_analysis_result
 
@@ -394,8 +475,6 @@ class LongRefinerCompressor:
         """
         # Get config
         prompt_template = self.step_to_config["doc_structuring"]["prompt_template"]
-        sampling_params = self.step_to_config["doc_structuring"]["sampling_params"]
-        lora_request = self.step_to_config["doc_structuring"]["lora_request"]
 
         # Extract document contents (skip title)
         doc_content_list = [
@@ -420,8 +499,8 @@ class LongRefinerCompressor:
             ],
             [],
         )
-        output_list = self.model.generate(
-            prompt_list, sampling_params=sampling_params, lora_request=lora_request
+        output_texts, _ = self._generate_with_config(
+            step_name="doc_structuring", prompt_list=prompt_list
         )
 
         # Parse outputs to structured content
@@ -430,9 +509,9 @@ class LongRefinerCompressor:
         for idx, item_doc_list in enumerate(doc_content_list):
             item_structured_docs = []
             for doc_idx, doc_content in enumerate(item_doc_list):
-                output = output_list[start_idx]
+                output_text = output_texts[start_idx]
                 doc_title = document_list[idx][doc_idx]["contents"].split("\n")[0]
-                structured_doc = self.parse_xml_doc(doc_content, output.outputs[0].text)
+                structured_doc = self.parse_xml_doc(doc_content, output_text)
                 structured_doc["title"] = doc_title
                 item_structured_docs.append(structured_doc)
                 start_idx += 1
@@ -454,8 +533,6 @@ class LongRefinerCompressor:
         """
         # Get config
         prompt_template = self.step_to_config["global_selection"]["prompt_template"]
-        sampling_params = self.step_to_config["global_selection"]["sampling_params"]
-        lora_request = self.step_to_config["global_selection"]["lora_request"]
 
         prompt_list = []
         for question, item_doc_list in zip(question_list, structured_doc_list):
@@ -485,8 +562,8 @@ class LongRefinerCompressor:
                 )
                 prompt_list.append(prompt)
 
-        output_list = self.model.generate(
-            prompt_list, sampling_params=sampling_params, lora_request=lora_request
+        output_texts, _ = self._generate_with_config(
+            step_name="global_selection", prompt_list=prompt_list
         )
 
         global_selection_result = []
@@ -494,7 +571,7 @@ class LongRefinerCompressor:
         for _question, item_doc_list in zip(question_list, structured_doc_list):
             item_global_selection_result = []
             for _doc in item_doc_list:
-                selected_title = output_list[idx].outputs[0].text
+                selected_title = output_texts[idx]
                 selected_title = json_repair.loads(selected_title)
                 if isinstance(selected_title, dict):
                     selected_title = selected_title.get("selected_titles", [])

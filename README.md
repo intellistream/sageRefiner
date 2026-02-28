@@ -30,8 +30,8 @@ maintaining semantic quality for Large Language Model applications.
 # Basic installation
 pip install isage-refiner
 
-# With vLLM support (for LongRefiner)
-pip install isage-refiner[vllm]
+# With benchmark support
+pip install isage-refiner[benchmark]
 
 # Development mode
 git clone https://github.com/intellistream/sageRefiner.git

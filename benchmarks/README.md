@@ -164,7 +164,7 @@ retriever:
   top_k: 100
 
 generator:
-  vllm:
+  sagellm:
     model_name: "Llama-3.1-8B-Instruct"
     base_url: "http://localhost:8000/v1"
 

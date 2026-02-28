@@ -404,7 +404,7 @@ pytest -x tests/test_file.py
 - `ruff>=0.4.0` - Code formatting and linting
 
 ### Optional Dependencies
-- `vllm>=0.6.0` - Fast LLM inference (for LongRefiner)
+- `peft` - Optional LoRA adapter loading for LongRefiner
 - `bitsandbytes` - Quantization support
 
 ## References
