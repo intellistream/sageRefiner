@@ -70,15 +70,11 @@ class RECOMPExtractiveRefinerOperator(MapOperator):
 
     def _init_compressor(self):
         """初始化 RECOMP Extractive 压缩器."""
-        import torch
-
         # Get model path
         model_path = self.cfg.get("model_path", "fangyuan/nq_extractive_compressor")
 
-        # Get device
+        # Get device (None means compressor auto-detects device)
         device = self.cfg.get("device")
-        if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Get other params
         top_k = self.cfg.get("top_k", 5)
@@ -217,31 +213,4 @@ class RECOMPExtractiveRefinerOperator(MapOperator):
 
         except Exception as e:
             logger.error(f"RECOMP Extractive Compression failed: {e}", exc_info=True)
-
-            # Fallback: use original documents as refining_results
-            # Compute meaningful statistics for fallback case
-            # Note: We use compressor's token counting and sentence splitting for consistency
-            original_tokens = self.compressor._count_tokens(original_context)
-            # Since we're not compressing, compressed_tokens equals original_tokens
-            compressed_tokens = original_tokens
-            # Compression rate is 1.0 (no compression)
-            compression_rate = 1.0
-            # Count sentences using compressor's method for consistency
-            # This gives accurate sentence count rather than using doc count as proxy
-            sentences = self.compressor._split_sentences(original_context)
-            total_sentences = len(sentences)
-
-            result_data = data.copy()
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = original_context
-            result_data["original_tokens"] = original_tokens
-            result_data["compressed_tokens"] = compressed_tokens
-            result_data["compression_rate"] = compression_rate
-            result_data["num_selected_sentences"] = total_sentences  # All sentences kept
-            result_data["total_sentences"] = total_sentences
-
-            logger.warning(
-                f"Fallback to original documents due to compression error. "
-                f"Stats: {original_tokens} tokens, {total_sentences} sentences"
-            )
-            return result_data
+            raise RuntimeError("RECOMP Extractive compression failed") from e

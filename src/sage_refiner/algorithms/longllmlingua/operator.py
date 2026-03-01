@@ -50,7 +50,6 @@ class LongLLMLinguaRefinerOperator(MapOperator):
             "compressed_tokens": int,        # Token count after compression
             "compression_rate": float,       # Compression rate (0-1)
             "compression_ratio": str,        # Human-readable ratio (e.g., "2.5x")
-            "compression_failed": bool,      # True if fallback to original docs
         }
 
     Configuration (all optional, defaults to paper baseline):
@@ -143,7 +142,6 @@ class LongLLMLinguaRefinerOperator(MapOperator):
             result_data["original_tokens"] = 0
             result_data["compressed_tokens"] = 0
             result_data["compression_rate"] = 1.0
-            result_data["compression_failed"] = False
             return result_data
 
         # Baseline mode: pass through without compression
@@ -151,7 +149,6 @@ class LongLLMLinguaRefinerOperator(MapOperator):
             docs_text = self._extract_document_texts(retrieval_results)
             result_data = data.copy()
             result_data["refining_results"] = docs_text
-            result_data["compression_failed"] = False
             self.logger.debug("LongLLMLingua disabled - passing through original documents")
             return result_data
 
@@ -223,31 +220,12 @@ class LongLLMLinguaRefinerOperator(MapOperator):
             result_data["compressed_tokens"] = compressed_tokens
             result_data["compression_rate"] = compression_rate
             result_data["compression_ratio"] = compress_result.get("ratio", "N/A")
-            result_data["compression_failed"] = False
 
             return result_data
 
         except Exception as e:
             self.logger.error(f"LongLLMLingua Compression failed: {e}", exc_info=True)
-            # Fallback: use original documents with realistic token statistics
-            original_text = "\n\n".join(docs_text)
-
-            # Try to compute actual token count if compressor is available
-            try:
-                original_tokens = self.compressor.get_token_length(original_text)
-            except Exception:
-                # Rough estimate: ~4 chars per token
-                original_tokens = len(original_text) // 4
-
-            result_data = data.copy()
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = original_text
-            result_data["original_tokens"] = original_tokens
-            result_data["compressed_tokens"] = original_tokens  # No compression
-            result_data["compression_rate"] = 1.0
-            result_data["compression_failed"] = True
-            self.logger.warning("Fallback to original documents due to compression error")
-            return result_data
+            raise RuntimeError("LongLLMLingua compression failed") from e
 
     def _extract_document_texts(self, retrieval_results: list) -> list[str]:
         """Extract text content from retrieval results

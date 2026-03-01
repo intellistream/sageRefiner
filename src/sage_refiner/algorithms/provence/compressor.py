@@ -148,7 +148,7 @@ class ProvenceCompressor:
         Returns:
             压缩结果列表
         """
-        # 使用provence模型的process接口
+        # 使用 provence 模型的 process 接口
         try:
             provence_out = self.model.process(
                 question_list,
@@ -160,22 +160,8 @@ class ProvenceCompressor:
                 reorder=False,  # 先不重排序，后续手动处理
             )
         except Exception as e:
-            logger.error(f"Provence model processing failed: {e}")
-            # 回退：返回原始上下文
-            results = []
-            for _question, contexts in zip(question_list, context_list):
-                original_text = "\n\n".join(contexts)
-                original_tokens = len(self.tokenizer.encode(original_text))
-                results.append(
-                    {
-                        "compressed_context": original_text,
-                        "original_tokens": original_tokens,
-                        "compressed_tokens": original_tokens,
-                        "compression_rate": 1.0,
-                        "pruned_docs": contexts,
-                    }
-                )
-            return results
+            logger.error(f"Provence model processing failed: {e}", exc_info=True)
+            raise RuntimeError("Provence model processing failed") from e
 
         processed_contexts = provence_out["pruned_context"]
         reranking_scores = provence_out.get("reranking_score", [])

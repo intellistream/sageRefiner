@@ -226,14 +226,11 @@ class RECOMPAbstractiveCompressor:
             summary = self.generate_summary(context, question)
         except Exception as e:
             logger.error(f"Summary generation failed: {e}", exc_info=True)
-            # Fallback: return original context truncated to max_target_length tokens
-            summary = context
-            logger.warning("Fallback to original context due to generation error")
+            raise RuntimeError("RECOMP Abstractive summary generation failed") from e
 
-        # Handle empty summary (model may generate empty output)
+        # Empty summary is treated as an error under fail-fast policy
         if not summary or not summary.strip():
-            logger.warning("Model generated empty summary, using placeholder")
-            summary = "This passage doesn't contain relevant information to the question."
+            raise ValueError("RECOMP Abstractive generated empty summary")
 
         # Count compressed tokens
         compressed_tokens = self._count_tokens(summary)
@@ -307,9 +304,8 @@ class RECOMPAbstractiveCompressor:
             for ctx, output_ids in zip(batch_contexts, outputs):
                 summary = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
 
-                # Handle empty summary
-                if not summary:
-                    summary = "This passage doesn't contain relevant information to the question."
+                if not summary or not summary.strip():
+                    raise ValueError("RECOMP Abstractive generated empty summary in batch")
 
                 original_tokens = self._count_tokens(ctx)
                 compressed_tokens = self._count_tokens(summary)

@@ -22,7 +22,7 @@ class AttentionHookExtractor:
     def __init__(
         self,
         model_name: str,
-        device: str = "cuda",
+        device: str | None = None,
         dtype: str = "bfloat16",
         use_flash_attention: bool = False,
         layer_range: tuple[int, int] | None = None,
@@ -32,14 +32,14 @@ class AttentionHookExtractor:
 
         Args:
             model_name: HuggingFace model name
-            device: Device to run model on
+            device: Device to run model on, None for auto-detect
             dtype: Data type (bfloat16, float16, float32)
             use_flash_attention: Whether to use flash attention
             layer_range: Range of layers to extract (start, end), None for all
             cache_dir: Cache directory for models
         """
         self.model_name = model_name
-        self.device = device
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.dtype = self._get_dtype(dtype)
         self.use_flash_attention = use_flash_attention
         self.cache_dir = cache_dir
@@ -61,7 +61,7 @@ class AttentionHookExtractor:
         # Load model
         model_kwargs = {
             "torch_dtype": self.dtype,
-            "device_map": device if device == "auto" else None,
+            "device_map": self.device if self.device == "auto" else None,
             "cache_dir": cache_dir,
         }
 
@@ -73,8 +73,8 @@ class AttentionHookExtractor:
             **model_kwargs,
         )
 
-        if device != "auto":
-            self.model = self.model.to(device)
+        if self.device != "auto":
+            self.model = self.model.to(self.device)
 
         self.model.eval()
 
@@ -203,7 +203,7 @@ class AttentionHookExtractor:
                                 )
                                 Q, K, V = qkv.unbind(2)
                         else:
-                            # Fallback: try to capture from output
+                            # Unsupported attention projection layout
                             return
 
                         # Reshape to [batch, num_heads, seq_len, head_dim]

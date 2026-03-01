@@ -28,34 +28,10 @@ class PromptTemplate:
         self.user_prompt = user_prompt
         self.enable_chat = True
         self.is_chat = True
-        self.is_openai = False
         self.reference_template = None
 
     def truncate_prompt(self, prompt):
         """Truncate prompt to max_input_len"""
-        if self.is_openai:
-            truncated_messages = []
-            total_tokens = 0
-            assert isinstance(prompt, list)
-            for message in prompt:
-                role_content = message["content"]
-                encoded_message = self.tokenizer.encode(role_content)
-
-                if total_tokens + len(encoded_message) <= self.max_input_len:
-                    truncated_messages.append(message)
-                    total_tokens += len(encoded_message)
-                else:
-                    print(
-                        f"The input text length is greater than the maximum length ({total_tokens + len(encoded_message)} > {self.max_input_len}) and has been truncated!"
-                    )
-                    remaining_tokens = self.max_input_len - total_tokens
-                    truncated_message = self.encoding.decode(encoded_message[:remaining_tokens])
-                    message["content"] = truncated_message
-                    truncated_messages.append(message)
-                    break
-
-            return truncated_messages
-
         assert isinstance(prompt, str)
         tokenized_prompt = self.tokenizer(prompt, truncation=False, return_tensors="pt").input_ids[
             0
@@ -85,18 +61,14 @@ class PromptTemplate:
             if isinstance(messages, str):
                 return self.truncate_prompt(messages)
             if self.is_chat and self.enable_chat:
-                if self.is_openai:
-                    self.truncate_prompt(messages)
-                else:
-                    prompt = self.tokenizer.apply_chat_template(
-                        messages, tokenize=False, add_generation_prompt=True
-                    )
-                    return self.truncate_prompt(prompt)
-            else:
-                prompt = "\n\n".join(
-                    [message["content"] for message in messages if message["content"]]
+                prompt = self.tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=True
                 )
                 return self.truncate_prompt(prompt)
+            prompt = "\n\n".join(
+                [message["content"] for message in messages if message["content"]]
+            )
+            return self.truncate_prompt(prompt)
 
         if formatted_reference is None:
             if retrieval_result is not None:
@@ -116,16 +88,15 @@ class PromptTemplate:
                 prompt_input.append({"role": "system", "content": system_prompt})
             if user_prompt != "":
                 prompt_input.append({"role": "user", "content": user_prompt})
-            if not self.is_openai:
-                prompt_input = self.tokenizer.apply_chat_template(
-                    prompt_input, tokenize=False, add_generation_prompt=True
-                )
+            prompt_input = self.tokenizer.apply_chat_template(
+                prompt_input, tokenize=False, add_generation_prompt=True
+            )
         else:
             prompt_input = "\n\n".join(
                 [prompt for prompt in [system_prompt, user_prompt] if prompt != ""]
             )
 
-        if previous_gen is not None and previous_gen not in ["", " "] and self.is_openai is False:
+        if previous_gen is not None and previous_gen not in ["", " "]:
             prompt_input += previous_gen
 
         return self.truncate_prompt(prompt_input)

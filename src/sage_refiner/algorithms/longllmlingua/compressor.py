@@ -109,7 +109,6 @@ class LongLLMLinguaCompressor:
         model_name: str | None = None,
         device: str = "cuda",
         model_config: dict[str, Any] | None = None,
-        open_api_config: dict[str, Any] | None = None,
     ):
         """Initialize LongLLMLingua Compressor
 
@@ -121,13 +120,10 @@ class LongLLMLinguaCompressor:
                 Options: "cuda", "cuda:0", "cpu", "auto"
             model_config: Additional configuration for model loading.
                 e.g., {"trust_remote_code": True, "torch_dtype": "auto"}
-            open_api_config: Configuration for OpenAI-compatible API fallback.
-                e.g., {"api_key": "...", "api_base": "..."}
         """
         self.model_name = model_name or self.DEFAULT_MODEL
         self.device = device
         self.model_config = model_config or {}
-        self.open_api_config = open_api_config or {}
 
         # Lazy initialization - compressor created on first use
         self._compressor = None
@@ -158,7 +154,6 @@ class LongLLMLinguaCompressor:
             model_name=self.model_name,
             device_map=self.device,
             model_config=self.model_config,
-            open_api_config=self.open_api_config,
             use_llmlingua2=False,  # LongLLMLingua uses LLM-based compression
         )
 
@@ -444,17 +439,16 @@ class LongLLMLinguaCompressor:
             concate_question=False,  # Query usually added by downstream prompter
         )
 
-    def get_token_length(self, text: str, use_oai_tokenizer: bool = False) -> int:
+    def get_token_length(self, text: str) -> int:
         """Get token length of text
 
         Args:
             text: Text to tokenize
-            use_oai_tokenizer: Use OpenAI tokenizer (for cost estimation)
 
         Returns:
             Number of tokens
         """
-        result: int = self.compressor.get_token_length(text, use_oai_tokenizer=use_oai_tokenizer)
+        result: int = self.compressor.get_token_length(text)
         return result
 
     def __repr__(self) -> str:
