@@ -43,3 +43,10 @@ SAGE was restructured from a monorepo into a polyrepo. `sageRefiner` is a **stan
 ## Git Hooks (Mandatory)
 - Never use `git commit --no-verify` or `git push --no-verify`.
 - If hooks fail, fix the issue first.
+
+## 🚫 NEVER_CREATE_DOT_VENV_MANDATORY
+
+- 永远不要创建 `.venv` 或 `venv`（无任何例外）。
+- NEVER create `.venv`/`venv` in this repository under any circumstance.
+- 必须复用当前已配置的非-venv Python 环境（如现有 conda 环境）。
+- If any script/task suggests creating a virtualenv, skip that step and continue with the existing environment.
