@@ -23,21 +23,45 @@ from ._version import __author__, __email__, __version__
 
 __license__ = "Apache-2.0"
 
-from .algorithms.llmlingua2 import LLMLingua2RefinerOperator
-from .algorithms.llmlingua2.compressor import LLMLingua2Compressor
-from .algorithms.longllmlingua import LongLLMLinguaRefinerOperator
-from .algorithms.longllmlingua.compressor import (
-    DEFAULT_LONG_LLMLINGUA_CONFIG,
-    LongLLMLinguaCompressor,
-)
-from .algorithms.LongRefiner.compressor import LongRefinerCompressor
-from .algorithms.provence.compressor import ProvenceCompressor
-from .algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
-from .algorithms.recomp_abst.compressor import RECOMPAbstractiveCompressor
-from .algorithms.recomp_extr import RECOMPExtractiveRefinerOperator
-from .algorithms.recomp_extr.compressor import RECOMPExtractiveCompressor
-from .algorithms.reform import AttentionHookExtractor, REFORMCompressor
 from .config import RefinerAlgorithm, RefinerConfig
+
+# ---------------------------------------------------------------------------
+# All compressors require torch + transformers (pip install isage-refiner[full])
+# Imported lazily so the package can be imported without the ML stack installed.
+# ---------------------------------------------------------------------------
+try:
+    from .algorithms.llmlingua2 import LLMLingua2RefinerOperator
+    from .algorithms.llmlingua2.compressor import LLMLingua2Compressor
+    from .algorithms.longllmlingua import LongLLMLinguaRefinerOperator
+    from .algorithms.longllmlingua.compressor import (
+        DEFAULT_LONG_LLMLINGUA_CONFIG,
+        LongLLMLinguaCompressor,
+    )
+    from .algorithms.LongRefiner.compressor import LongRefinerCompressor
+    from .algorithms.provence.compressor import ProvenceCompressor
+    from .algorithms.recomp_abst import RECOMPAbstractiveRefinerOperator
+    from .algorithms.recomp_abst.compressor import RECOMPAbstractiveCompressor
+    from .algorithms.recomp_extr import RECOMPExtractiveRefinerOperator
+    from .algorithms.recomp_extr.compressor import RECOMPExtractiveCompressor
+    from .algorithms.reform import AttentionHookExtractor, REFORMCompressor
+
+    _ML_AVAILABLE = True
+except ImportError:
+    _ML_AVAILABLE = False
+    # Stubs so downstream code can guard with `if sage_refiner.REFORMCompressor`
+    LLMLingua2RefinerOperator = None  # type: ignore[assignment]
+    LLMLingua2Compressor = None  # type: ignore[assignment]
+    LongLLMLinguaRefinerOperator = None  # type: ignore[assignment]
+    DEFAULT_LONG_LLMLINGUA_CONFIG = None  # type: ignore[assignment]
+    LongLLMLinguaCompressor = None  # type: ignore[assignment]
+    LongRefinerCompressor = None  # type: ignore[assignment]
+    ProvenceCompressor = None  # type: ignore[assignment]
+    RECOMPAbstractiveRefinerOperator = None  # type: ignore[assignment]
+    RECOMPAbstractiveCompressor = None  # type: ignore[assignment]
+    RECOMPExtractiveRefinerOperator = None  # type: ignore[assignment]
+    RECOMPExtractiveCompressor = None  # type: ignore[assignment]
+    AttentionHookExtractor = None  # type: ignore[assignment]
+    REFORMCompressor = None  # type: ignore[assignment]
 
 # Aliases for convenience
 LongRefiner = LongRefinerCompressor
