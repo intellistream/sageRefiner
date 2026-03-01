@@ -38,27 +38,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-reranker = [
-    "FlagEmbedding>=1.0.0",
-]
-benchmark = [
-    # SAGE runtime components needed by benchmarks (L3/L4)
-    "isage-kernel",
-    "isage-middleware",
-    # Benchmark-specific SAGE components
-    "isage-common[embedding]",  # Embedding extras for benchmarks
-    "isage-benchmark[longbench]",  # LongBench evaluation components
-
-    # Data analysis and visualization
-    "scipy>=1.10.0",
-    "matplotlib>=3.7.0",
-    "pandas>=2.0.0",
-    "datasets>=2.14.0",
-    "pyarrow>=10.0.0",                  # Arrow 数据格式
-]
-full = [
-    "FlagEmbedding>=1.0.0",
-]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -68,18 +47,6 @@ dev = [
     "matplotlib>=3.7.0",
     "pandas>=2.0.0",
     "datasets>=2.14.0",
-]
-test = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    # Test dependencies for benchmarks module
-    "scipy>=1.10.0",
-    "matplotlib>=3.7.0",
-    "pandas>=2.0.0",
-    "datasets>=2.14.0",
-    # Benchmark-specific SAGE components
-    "isage-common[embedding]",
-    "isage-benchmark[longbench]",
 ]
 
 [project.urls]
