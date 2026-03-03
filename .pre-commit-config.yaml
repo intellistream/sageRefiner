@@ -18,78 +18,78 @@ repos:
   # ────────────────────────────────────────────────────────────────
   # General file checks
   # ────────────────────────────────────────────────────────────────
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
-      - id: end-of-file-fixer
-      - id: check-yaml
-        args: [--unsafe]
-      - id: check-json
-      - id: check-toml
-      - id: check-added-large-files
-        args: ["--maxkb=1000"]
-      - id: check-merge-conflict
-      - id: check-case-conflict
-      - id: mixed-line-ending
-        args: [--fix=lf]
-      - id: detect-private-key
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+  - id: end-of-file-fixer
+  - id: check-yaml
+    args: [--unsafe]
+  - id: check-json
+  - id: check-toml
+  - id: check-added-large-files
+    args: ["--maxkb=1000"]
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: mixed-line-ending
+    args: [--fix=lf]
+  - id: detect-private-key
 
   # ────────────────────────────────────────────────────────────────
   # Python: Ruff linter and formatter (replaces black, flake8, isort)
   # ────────────────────────────────────────────────────────────────
   # NOTE: Using ruff format instead of black to avoid conflicts
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.14
-    hooks:
-      - id: ruff
-        name: ruff check
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-        name: ruff format
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.14.14
+  hooks:
+  - id: ruff
+    name: ruff check
+    args: [--fix, --exit-non-zero-on-fix]
+  - id: ruff-format
+    name: ruff format
 
   # ────────────────────────────────────────────────────────────────
   # Custom local hook: Auto-restage modified files after pre-commit
   # ────────────────────────────────────────────────────────────────
   # This prevents "staged vs working directory" conflicts when hooks
   # modify files (e.g., ruff-format)
-  - repo: local
-    hooks:
-      - id: git-restage-modified-files
-        name: Re-stage files modified by pre-commit hooks
-        entry: bash -c 'git diff --name-only --diff-filter=M --cached | xargs -r git add 2>/dev/null || true'
-        language: system
-        always_run: true
-        stages: [commit]
+- repo: local
+  hooks:
+  - id: git-restage-modified-files
+    name: Re-stage files modified by pre-commit hooks
+    entry: bash -c 'git diff --name-only --diff-filter=M --cached | xargs -r git add 2>/dev/null || true'
+    language: system
+    always_run: true
+    stages: [commit]
 
   # ────────────────────────────────────────────────────────────────
   # YAML formatting
   # ────────────────────────────────────────────────────────────────
-  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.16.0
-    hooks:
-      - id: pretty-format-yaml
-        args: [--autofix, --indent=2, --preserve-quotes]
-        exclude: ^\.github/
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.16.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent=2, --preserve-quotes]
+    exclude: ^\.github/
 
   # ────────────────────────────────────────────────────────────────
   # Markdown formatting
   # ────────────────────────────────────────────────────────────────
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 1.0.0
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm
-        args: [--wrap=100]
-        exclude: ^(CHANGELOG|HISTORY)\.md$
+- repo: https://github.com/executablebooks/mdformat
+  rev: 1.0.0
+  hooks:
+  - id: mdformat
+    additional_dependencies:
+    - mdformat-gfm
+    args: [--wrap=100]
+    exclude: ^(CHANGELOG|HISTORY)\.md$|^\.github/ISSUE_TEMPLATE/|^\.github/agents/|^\.copilot-instructions$
 
   # ────────────────────────────────────────────────────────────────
   # Security: Check for secrets and sensitive data
   # ────────────────────────────────────────────────────────────────
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        exclude: ^(\.env\.template|tests/fixtures/)
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.5.0
+  hooks:
+  - id: detect-secrets
+    exclude: ^(\.env\.template|tests/fixtures/)

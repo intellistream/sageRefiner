@@ -76,26 +76,26 @@ benchmarks/
 
 所有评测都基于 `sage.middleware.operators.rag.evaluate` 中定义的标准指标：
 
-| 指标 | 类 | 说明 |
-|------|-----|------|
-| **F1** | `F1Evaluate` | Token级别F1分数 |
-| **Token Count** | `TokenCountEvaluate` | 压缩后的Token数 |
-| **Latency** | `LatencyEvaluate` | Retrieve/Refine/Generate各阶段延迟 |
-| **Compression Rate** | `CompressionRateEvaluate` | 原始tokens / 压缩后tokens |
-| **ROUGE-L** | `RougeLEvaluate` | ROUGE-L F1分数 |
-| **Recall** | `RecallEvaluate` | 召回率 |
+| 指标                 | 类                        | 说明                               |
+| -------------------- | ------------------------- | ---------------------------------- |
+| **F1**               | `F1Evaluate`              | Token级别F1分数                    |
+| **Token Count**      | `TokenCountEvaluate`      | 压缩后的Token数                    |
+| **Latency**          | `LatencyEvaluate`         | Retrieve/Refine/Generate各阶段延迟 |
+| **Compression Rate** | `CompressionRateEvaluate` | 原始tokens / 压缩后tokens          |
+| **ROUGE-L**          | `RougeLEvaluate`          | ROUGE-L F1分数                     |
+| **Recall**           | `RecallEvaluate`          | 召回率                             |
 
 ### 2. 支持的算法
 
-| 算法 | 类型 | 特点 | 依赖 |
-|------|------|------|------|
-| **Baseline** | 截断 | 无压缩，仅截断 | 无 |
-| **LongRefiner** | LLM-based | 三阶段LLM指导，高质量 | 需要LLM |
-| **REFORM** | Attention-based | 注意力头驱动，快速 | 需要LLM |
-| **Provence** | Provenance-aware | 句子级剪枝 | 需要DeBERTa |
-| **LLMLingua-2** | BERT-based | 快速，多语言 | 需要BERT |
-| **LongLLMLingua** | PPL-based | 问题感知 | 需要LLM |
-| **RECOMP** | Extractive/Abstractive | 重组合式压缩 | 需要LLM |
+| 算法              | 类型                   | 特点                  | 依赖        |
+| ----------------- | ---------------------- | --------------------- | ----------- |
+| **Baseline**      | 截断                   | 无压缩，仅截断        | 无          |
+| **LongRefiner**   | LLM-based              | 三阶段LLM指导，高质量 | 需要LLM     |
+| **REFORM**        | Attention-based        | 注意力头驱动，快速    | 需要LLM     |
+| **Provence**      | Provenance-aware       | 句子级剪枝            | 需要DeBERTa |
+| **LLMLingua-2**   | BERT-based             | 快速，多语言          | 需要BERT    |
+| **LongLLMLingua** | PPL-based              | 问题感知              | 需要LLM     |
+| **RECOMP**        | Extractive/Abstractive | 重组合式压缩          | 需要LLM     |
 
 ### 3. 实验框架
 
@@ -187,15 +187,15 @@ compressed_context = pipeline(question="query", documents=[...], budget=2048)
 ### 添加新算法
 
 1. 在 `implementations/pipelines/` 中创建 `new_algorithm_rag.py`
-2. 实现 `RAGPipeline` 接口
-3. 在 `config/` 中添加 `config_new_algorithm.yaml`
-4. 更新 `__init__.py` 导出新算法
+1. 实现 `RAGPipeline` 接口
+1. 在 `config/` 中添加 `config_new_algorithm.yaml`
+1. 更新 `__init__.py` 导出新算法
 
 ### 添加新指标
 
 1. 在 SAGE 框架的 `sage.middleware.operators.rag.evaluate` 中定义
-2. 更新 `experiments/base_experiment.py` 中的指标收集
-3. 更新 `results_collector.py` 中的结果类
+1. 更新 `experiments/base_experiment.py` 中的指标收集
+1. 更新 `results_collector.py` 中的结果类
 
 ## 依赖关系
 
@@ -222,18 +222,18 @@ benchmarks/
 ## 注意事项
 
 1. **GPU资源**: LongRefiner, REFORM等算法需要GPU，推荐RTX 3090+
-2. **内存**: 评测大数据集时需要充足内存，推荐48GB+
-3. **时间**: 完整评测可能需要数小时，建议先用小样本测试
-4. **配置**: 所有配置都在 `config/` 目录，可根据需要调整参数
+1. **内存**: 评测大数据集时需要充足内存，推荐48GB+
+1. **时间**: 完整评测可能需要数小时，建议先用小样本测试
+1. **配置**: 所有配置都在 `config/` 目录，可根据需要调整参数
 
 ## 故障排查
 
-| 问题 | 解决方案 |
-|------|---------|
-| CUDA OOM | 减小 `max_model_len`, 启用 `gpu_memory_utilization` |
-| 模型加载失败 | 检查网络连接，预下载模型权重 |
-| 评测缓慢 | 减少样本数，使用更小的model, 启用多进程 |
-| 指标异常 | 检查数据集格式，验证prompt工程 |
+| 问题         | 解决方案                                            |
+| ------------ | --------------------------------------------------- |
+| CUDA OOM     | 减小 `max_model_len`, 启用 `gpu_memory_utilization` |
+| 模型加载失败 | 检查网络连接，预下载模型权重                        |
+| 评测缓慢     | 减少样本数，使用更小的model, 启用多进程             |
+| 指标异常     | 检查数据集格式，验证prompt工程                      |
 
 ## 更新历史
 

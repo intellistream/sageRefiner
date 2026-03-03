@@ -97,7 +97,9 @@ def test_longllmlingua_compress_for_rag_uses_query_contract() -> None:
     assert kwargs["concate_question"] is False
 
 
-def _build_recomp_extractive(top_k: int = 2, score_threshold: float = 0.0) -> RECOMPExtractiveCompressor:
+def _build_recomp_extractive(
+    top_k: int = 2, score_threshold: float = 0.0
+) -> RECOMPExtractiveCompressor:
     compressor = RECOMPExtractiveCompressor.__new__(RECOMPExtractiveCompressor)
     compressor.top_k = top_k
     compressor.score_threshold = score_threshold

@@ -10,6 +10,8 @@ Three-stage pipeline:
     3. Context Selection: Select relevant content based on scores
 """
 
+from __future__ import annotations
+
 import re
 import warnings
 from typing import TYPE_CHECKING, Any
@@ -17,7 +19,12 @@ from typing import TYPE_CHECKING, Any
 import json_repair
 import torch
 from tqdm import tqdm
-from transformers import AutoModel, AutoModelForCausalLM, AutoModelForSequenceClassification, AutoTokenizer
+from transformers import (
+    AutoModel,
+    AutoModelForCausalLM,
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+)
 
 if TYPE_CHECKING:
     from peft import PeftModel
@@ -438,7 +445,8 @@ class LongRefinerCompressor:
         # Get special token IDs
         special_token = ["Local", "Global"]
         token_to_id = {
-            token: self.tokenizer.encode(token, add_special_tokens=False)[0] for token in special_token
+            token: self.tokenizer.encode(token, add_special_tokens=False)[0]
+            for token in special_token
         }
 
         # Get config

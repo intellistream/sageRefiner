@@ -36,7 +36,7 @@ jobs:
       - name: Check ruff version consistency
         run: |
           echo "Checking ruff version consistency between local and pre-commit..."
-          
+
           # Get local ruff version (if installed)
           if command -v ruff &> /dev/null; then
             LOCAL_RUFF=$(ruff --version | awk '{print $2}')
@@ -142,4 +142,3 @@ jobs:
           flags: unittests
           name: codecov-${{ matrix.python-version }}
           fail_ci_if_error: false
-

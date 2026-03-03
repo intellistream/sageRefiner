@@ -11,8 +11,9 @@ Base Experiment Framework for Refiner Benchmarking
 """
 
 from abc import ABC, abstractmethod
+from contextlib import suppress
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -139,11 +140,8 @@ class RefinerExperimentConfig:
         """从字典创建配置"""
         # 处理枚举类型
         if "dataset" in data and isinstance(data["dataset"], str):
-            try:
+            with suppress(ValueError):
                 data["dataset"] = DatasetType(data["dataset"])
-            except ValueError:
-                # 自定义数据集名称，保持字符串
-                pass
         # 处理 datasets 字段
         if "datasets" not in data and "dataset" in data:
             # 向后兼容：如果没有 datasets，从 dataset 创建
@@ -323,7 +321,9 @@ class BaseRefinerExperiment(ABC):
             config: 实验配置
         """
         self.config = config
-        self.experiment_id = f"{config.name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.experiment_id = (
+            f"{config.name}_{datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+        )
         self.output_dir = Path(config.output_dir) / self.experiment_id
         self.result: ExperimentResult | None = None
 

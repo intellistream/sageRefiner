@@ -6,32 +6,35 @@
 
 ## Context
 
-`sageRefiner` 在算子编排层（`operator.py`）存在 `torch` 的直接依赖，用于设备探测（CPU/CUDA）。
-这会把重依赖的使用面扩散到非核心算法层，增加边界复杂度。
+`sageRefiner` 在算子编排层（`operator.py`）存在 `torch` 的直接依赖，用于设备探测（CPU/CUDA）。 这会把重依赖的使用面扩散到非核心算法层，增加边界复杂度。
 
 Issue #16 要求在不引入兼容层的前提下，收敛 `torch/transformers` 使用面：
 
 1. 仅保留不可替代调用。
-2. 删除冗余路径。
-3. 通过测试与文档形成可审阅证据。
+1. 删除冗余路径。
+1. 通过测试与文档形成可审阅证据。
 
 ## Decision
 
 执行以下边界收敛：
 
 1. 从以下编排层文件删除 `torch` 依赖和设备探测逻辑：
+
    - `algorithms/recomp_abst/operator.py`
    - `algorithms/recomp_extr/operator.py`
    - `algorithms/reform/operator.py`
 
-2. 统一由核心算法实现层负责设备自动探测：
+1. 统一由核心算法实现层负责设备自动探测：
+
    - `RECOMPAbstractiveCompressor` / `RECOMPExtractiveCompressor`（已有 `device=None` 自动探测）
    - `AttentionHookExtractor`（新增 `device: str | None`，`None` 时内部使用 `torch.cuda.is_available()`）
 
-3. 新增 issue #16 回归测试，确保：
+1. 新增 issue #16 回归测试，确保：
+
    - operator 层不再直接 import `torch`/`transformers`
    - 核心算法模块保留必要的 `torch`/`transformers` 依赖
-   - operator 压缩异常路径不再回退原文，统一 fail-fast 抛错（覆盖 RECOMP/REFORM/LongLLMLingua/Provence/LLMLingua2/LongRefiner）
+   - operator 压缩异常路径不再回退原文，统一 fail-fast 抛错（覆盖
+     RECOMP/REFORM/LongLLMLingua/Provence/LLMLingua2/LongRefiner）
 
 ## Consequences
 

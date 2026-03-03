@@ -180,7 +180,7 @@ class TestCohensD:
 
     def test_insufficient_samples(self):
         """测试样本不足"""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="at least 2 samples"):
             cohens_d([0.3], [0.4])
 
 

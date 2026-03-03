@@ -104,6 +104,10 @@ ignore = [
     "B905", # zip without strict (Python 3.9 compatibility)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"src/sage_refiner/algorithms/EHPC/**/*.py" = ["N999"]
+"sage_refiner/algorithms/EHPC/**/*.py" = ["N999"]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true

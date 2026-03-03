@@ -65,9 +65,7 @@ class PromptTemplate:
                     messages, tokenize=False, add_generation_prompt=True
                 )
                 return self.truncate_prompt(prompt)
-            prompt = "\n\n".join(
-                [message["content"] for message in messages if message["content"]]
-            )
+            prompt = "\n\n".join([message["content"] for message in messages if message["content"]])
             return self.truncate_prompt(prompt)
 
         if formatted_reference is None:
