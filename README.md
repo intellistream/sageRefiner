@@ -1,6 +1,6 @@
 # sageRefiner
 
-**Intelligent Context Compression Library for LLM Systems**
+## Intelligent Context Compression Library for LLM Systems
 
 sageRefiner provides state-of-the-art context compression algorithms to reduce token usage while
 maintaining semantic quality for Large Language Model applications.
@@ -99,6 +99,30 @@ python examples/algorithm_comparison.py
 - PyTorch 2.0+
 - Transformers 4.43+
 
+## L3 Boundary Definition
+
+This repository is an **L3 algorithm library** in the SAGE layered architecture.
+
+- **In scope**
+  - Context compression algorithms and their typed APIs
+  - Algorithm-level orchestration, evaluation helpers, and benchmark integration
+  - Model-level compute logic required by algorithm implementations
+- **Out of scope**
+  - Runtime/service wiring, networked operators, storage backends, and infrastructure adapters
+  - CLI/platform orchestration responsibilities that belong to upper layers
+- **Forbidden imports (boundary rule)**
+  - Do not import from L4/L5 service/application packages in core algorithm paths
+  - No backward compatibility shim/re-export/fallback layers for boundary migrations
+
+### Dependency Audit (Phase 1)
+
+- **Retained with rationale**
+  - `torch`, `transformers`: required by algorithm compute paths
+  - `numpy`, `pyyaml`, `tqdm`, `rich`: required for algorithm runtime/config/output
+- **Boundary tightening completed**
+  - Heavy dependency usage is constrained to core algorithm/compressor modules
+  - Operator fallback paths were removed in favor of fail-fast behavior
+
 ## Benchmarking
 
 The `benchmarks` module provides a comprehensive evaluation framework for all compression
@@ -137,8 +161,9 @@ Apache License 2.0
 
 ## Links
 
-- **SAGE Framework**: https://github.com/intellistream/SAGE
-- **Issues**: https://github.com/intellistream/sageRefiner/issues
+- **SAGE Framework**: [https://github.com/intellistream/SAGE](https://github.com/intellistream/SAGE)
+- **Issues**:
+  [https://github.com/intellistream/sageRefiner/issues](https://github.com/intellistream/sageRefiner/issues)
 
 ## Documentation & Development
 
