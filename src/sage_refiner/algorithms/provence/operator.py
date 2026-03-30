@@ -43,7 +43,7 @@ class ProvenceRefinerOperator(MapOperator):
         self.cfg = config
         self.enabled = config.get("enabled", True)
 
-        # 无论 enabled 与否，都初始化 compressor，这样 baseline 和 fallback 也能用 tokenizer
+        # 无论 enabled 与否，都初始化 compressor，这样 baseline 路径也能用 tokenizer
         self._init_compressor()
 
         if self.enabled:
@@ -172,16 +172,4 @@ class ProvenceRefinerOperator(MapOperator):
 
         except Exception as e:
             logger.error(f"Provence Compression failed: {e}", exc_info=True)
-            # Fallback: use original documents as refining_results
-            result_data = data.copy()
-            original_text = "\n\n".join(docs_text)
-            original_tokens = len(self.compressor.tokenizer.encode(original_text))
-
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = original_text
-            result_data["original_tokens"] = original_tokens
-            result_data["compressed_tokens"] = original_tokens
-            result_data["compression_rate"] = 1.0  # 未压缩（回退）
-
-            logger.warning("Fallback to original documents due to compression error")
-            return result_data
+            raise RuntimeError("Provence compression failed") from e

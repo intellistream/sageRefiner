@@ -116,8 +116,7 @@ class RECOMPExtractiveCompressor:
     def _split_sentences(self, text: str) -> list[str]:
         """Split text into sentences.
 
-        使用简单的规则进行句子分割，支持中英文。
-        尝试使用 NLTK，如果不可用则使用正则表达式。
+        使用固定正则规则进行中英文句子分割。
 
         Args:
             text: 输入文本
@@ -125,23 +124,7 @@ class RECOMPExtractiveCompressor:
         Returns:
             句子列表
         """
-        # Try NLTK first
-        try:
-            import nltk
-
-            try:
-                sentences = nltk.sent_tokenize(text)
-                # Filter out empty sentences
-                result_sentences: list[str] = [s.strip() for s in sentences if s.strip()]
-                if result_sentences:
-                    return result_sentences
-            except LookupError:
-                # NLTK data not downloaded, fall through to regex
-                logger.debug("NLTK punkt data not available, using regex fallback")
-        except ImportError:
-            logger.debug("NLTK not available, using regex fallback")
-
-        # Regex fallback for English and Chinese
+        # Regex split for English and Chinese
         # Split on sentence-ending punctuation followed by space or newline
         # Handles: . ! ? 。 ! ？ etc.
         pattern = r"(?<=[.!?。！？])\s+"

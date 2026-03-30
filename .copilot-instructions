@@ -92,16 +92,16 @@ class YourCompressor:
         """Initialize with config parameters"""
         self.config = kwargs
         self._load_models()
-    
+
     def compress(self, question, document_list, budget):
         """
         Compress documents within token budget.
-        
+
         Args:
             question: Query string
             document_list: List of dicts with "contents" key
             budget: Target token count
-        
+
         Returns:
             dict with:
                 - compressed_context: str
@@ -172,13 +172,13 @@ def compress(self, question, document_list, budget):
 ```python
 class LongRefinerCompressor:
     """One-line summary.
-    
+
     Extended description with algorithm overview.
-    
+
     Attributes:
         model: The underlying LLM model
         config: Configuration dictionary
-    
+
     Example:
         >>> compressor = LongRefinerCompressor()
         >>> result = compressor.compress("query", docs, 2048)
@@ -404,7 +404,7 @@ pytest -x tests/test_file.py
 - `ruff>=0.4.0` - Code formatting and linting
 
 ### Optional Dependencies
-- `vllm>=0.6.0` - Fast LLM inference (for LongRefiner)
+- `peft` - Optional LoRA adapter loading for LongRefiner
 - `bitsandbytes` - Quantization support
 
 ## References

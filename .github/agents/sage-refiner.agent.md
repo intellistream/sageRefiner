@@ -1,11 +1,15 @@
 ---
 description: "sageRefiner Development Agent - Intelligent Context Compression Library for RAG Systems"
-tools: ['vscode', 'execute', 'read', 'agent', 'edit', 'search', 'web', 'todo', 'github.vscode-pull-request-github/copilotCodingAgent', 'github.vscode-pull-request-github/issue_fetch', 'github.vscode-pull-request-github/suggest-fix', 'github.vscode-pull-request-github/searchSyntax', 'github.vscode-pull-request-github/doSearch', 'github.vscode-pull-request-github/renderIssues', 'github.vscode-pull-request-github/activePullRequest', 'github.vscode-pull-request-github/openPullRequest', 'ms-azuretools.vscode-containers/containerToolsConfig', 'ms-python.python/getPythonEnvironmentInfo', 'ms-python.python/getPythonExecutableCommand', 'ms-python.p ython/installPythonPackage', 'ms-python.python/configurePythonEnvironment', 'ms-toolsai.jupyter/configureNotebook', 'ms-toolsai.jupyter/listNotebookPackages', 'ms-toolsai.jupyter/installNotebookPackages']
+tools: ['vscode', 'execute', 'read', 'agent', 'edit', 'search', 'web', 'todo', 'vscode.mermaid-chat-features/renderMermaidDiagram', 'github.vscode-pull-request-github/issue_fetch', 'github.vscode-pull-request-github/suggest-fix', 'github.vscode-pull-request-github/searchSyntax', 'github.vscode-pull-request-github/doSearch', 'github.vscode-pull-request-github/renderIssues', 'github.vscode-pull-request-github/activePullRequest', 'github.vscode-pull-request-github/openPullRequest', 'ms-azuretools.vscode-containers/containerToolsConfig', 'ms-python.python/getPythonEnvironmentInfo', 'ms-python.python/getPythonExecutableCommand', 'ms-python.python/installPythonPackage', 'ms-python.python/configurePythonEnvironment', 'ms-toolsai.jupyter/configureNotebook', 'ms-toolsai.jupyter/listNotebookPackages', 'ms-toolsai.jupyter/installNotebookPackages', 'ms-vscode.cpp-devtools/Build_CMakeTools', 'ms-vscode.cpp-devtools/RunCtest_CMakeTools', 'ms-vscode.cpp-devtools/ListBuildTargets_CMakeTools', 'ms-vscode.cpp-devtools/ListTests_CMakeTools']
 ---
 
 ## Overview
 
 This agent specializes in developing and maintaining **sageRefiner**, a standalone Python library for intelligent context compression in RAG (Retrieval-Augmented Generation) systems. sageRefiner was extracted from the SAGE framework as an independent module to provide reusable compression algorithms.
+
+## Environment Rule
+
+- Do not create new local virtual environments (`venv`/`.venv`); use the existing configured Python environment.
 
 ## What This Agent Does
 
@@ -128,7 +132,7 @@ print(result['compression_rate'])
 
 - **SAGE Framework**: Via `sage-middleware` RefinerAdapter component
 - **HuggingFace Hub**: Model loading from HF (Qwen, LLaMA, DeBERTa, etc.)
-- **vLLM**: Optional fast LLM inference for LongRefiner
+- **sageLLM / Transformers backend**: Inference backend for LongRefiner
 - **Custom Pipelines**: Standalone library, can be used independently
 
 ## Performance Metrics to Track
@@ -155,3 +159,9 @@ When working on complex tasks:
 - **Show Examples**: Include code samples for complex features
 - **Incremental Progress**: Report completion of logical units, not entire projects
 - **Ask Clarifications**: When requirements are ambiguous, ask for specifics before implementation
+
+## Polyrepo coordination rules
+
+- Treat this repository as the only local source tree; do not assume sibling repositories exist.
+- If a task spans multiple repositories, implement only this repo and explicitly list follow-up repo/version-bump actions.
+- Do not create `venv`/`.venv`; always use the existing configured Python environment.

@@ -161,8 +161,7 @@ class LLMLingua2RefinerOperator(MapOperator):
 
             # Perform compression
             if self._compressor is None:
-                logger.error("Compressor not initialized")
-                return data
+                raise RuntimeError("LLMLingua2 compressor is not initialized")
             compress_result = self._compressor.compress(
                 context=docs_text,
                 rate=rate,
@@ -204,14 +203,9 @@ class LLMLingua2RefinerOperator(MapOperator):
 
         except Exception as e:
             logger.error(f"LLMLingua2 compression failed: {e}", exc_info=True)
-            # Fallback: return original documents
-            result_data = data.copy()
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = "\n\n".join(docs_text)
-            result_data["original_tokens"] = 0
-            result_data["compressed_tokens"] = 0
-            result_data["compression_rate"] = 1.0
-            return result_data
+            if isinstance(e, RuntimeError):
+                raise
+            raise RuntimeError("LLMLingua2 compression failed") from e
 
     def _extract_document_texts(self, retrieval_results: list[dict[str, Any] | str]) -> list[str]:
         """Extract text content from retrieval results.

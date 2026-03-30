@@ -172,7 +172,7 @@ def cohens_d(
         True
     """
     if len(baseline_scores) < 2 or len(method_scores) < 2:
-        raise ValueError("At least 2 samples required for each group")
+        raise ValueError("at least 2 samples required for each group")
 
     baseline = np.array(baseline_scores)
     method = np.array(method_scores)

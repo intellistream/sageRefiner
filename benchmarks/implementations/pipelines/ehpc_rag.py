@@ -35,7 +35,7 @@ def pipeline_run(config):
         env.from_batch(LongBenchBatch, config["source"])
         .map(EHPCRefinerOperator, config["refiner"])
         .map(LongBenchPromptor, config["promptor"])
-        .map(OpenAIGenerator, config["generator"]["vllm"])
+        .map(OpenAIGenerator, config["generator"]["sagellm"])
         .map(LongBenchEvaluator, config["evaluate"])
     )
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print("🚀 Starting EHPC RAG Pipeline (LongBench)...")
     print(f"📊 Dataset: {config['source'].get('hf_dataset_config', 'N/A')}")
     print(f"📈 Max samples: {config['source'].get('max_samples', 'All')}")
-    print(f"🤖 Generator: {config['generator']['vllm']['model_name']}")
+    print(f"🤖 Generator: {config['generator']['sagellm']['model_name']}")
     print("=" * 60)
 
     pipeline_run(config)

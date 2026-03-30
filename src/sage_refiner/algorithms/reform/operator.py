@@ -52,8 +52,6 @@ class REFORMRefinerOperator(MapOperator):
 
     def _init_compressor(self):
         """初始化REFORM压缩器"""
-        import torch
-
         # 1. 直接创建AttentionHookExtractor
         model_path = self.cfg.get("model_path")
         if not model_path:
@@ -63,8 +61,8 @@ class REFORMRefinerOperator(MapOperator):
         if not selected_heads:
             raise ValueError("selected_heads is required in reform config")
 
-        # 获取device
-        device = self.cfg.get("device", "cuda" if torch.cuda.is_available() else "cpu")
+        # 获取device（None 时由 AttentionHookExtractor 自动检测）
+        device = self.cfg.get("device")
 
         # 获取layer_range
         layer_range = self.cfg.get("layer_range")
@@ -203,13 +201,4 @@ class REFORMRefinerOperator(MapOperator):
 
         except Exception as e:
             self.logger.error(f"REFORM Compression failed: {e}", exc_info=True)
-            # Fallback: use original documents as refining_results
-            result_data = data.copy()
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = original_context
-            result_data["original_tokens"] = 0
-            result_data["compressed_tokens"] = 0
-            result_data["compression_rate"] = 1.0
-            result_data["num_spans"] = len(docs_text)
-            self.logger.warning("Fallback to original documents due to compression error")
-            return result_data
+            raise RuntimeError("REFORM compression failed") from e

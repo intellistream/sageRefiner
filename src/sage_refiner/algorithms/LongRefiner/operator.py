@@ -174,9 +174,4 @@ class LongRefinerOperator(MapOperator):
 
         except Exception as e:
             logger.error(f"LongRefiner compression failed: {e}", exc_info=True)
-            # Fallback: return original documents
-            result_data = data.copy()
-            docs_text = [doc.get("contents", str(doc)) for doc in documents]
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = "\n\n".join(docs_text)
-            return result_data
+            raise RuntimeError("LongRefiner compression failed") from e

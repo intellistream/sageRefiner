@@ -33,7 +33,7 @@ Benchmark Refiner Configuration
         documents_path: str
 
     generator:
-      vllm:
+      sagellm:
         model_name: str
         base_url: str
 

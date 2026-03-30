@@ -84,10 +84,7 @@ def load_dataset_samples(
         elif "contexts" in item:
             # 保留所有 contexts（或至少前10个以避免过长）
             contexts = item["contexts"]
-            if isinstance(contexts, list):
-                context = " ".join(contexts[:10])  # 最多取前10个
-            else:
-                context = str(contexts)
+            context = " ".join(contexts[:10]) if isinstance(contexts, list) else str(contexts)
         elif "positive_ctxs" in item:
             # 保留所有 positive contexts（或至少前10个）
             positive_ctxs = item["positive_ctxs"]

@@ -13,7 +13,7 @@ promptor:
   platform: local
 
 generator:
-  vllm:
+  sagellm:
     api_key: ''
     method: openai
     model_name: Qwen/Qwen2.5-7B-Instruct

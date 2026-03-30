@@ -68,15 +68,11 @@ class RECOMPAbstractiveRefinerOperator(MapOperator):
 
     def _init_compressor(self):
         """初始化 RECOMP Abstractive 压缩器."""
-        import torch
-
         # Get model path
         model_path = self.cfg.get("model_path", "fangyuan/nq_abstractive_compressor")
 
-        # Get device
+        # Get device (None means compressor auto-detects device)
         device = self.cfg.get("device")
-        if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Get other params
         max_source_length = self.cfg.get("max_source_length", 1024)
@@ -209,19 +205,4 @@ class RECOMPAbstractiveRefinerOperator(MapOperator):
 
         except Exception as e:
             logger.error(f"RECOMP Abstractive Compression failed: {e}", exc_info=True)
-
-            # Fallback: use original documents as refining_results
-            original_tokens = self.compressor._count_tokens(original_context)
-
-            result_data = data.copy()
-            result_data["refining_results"] = docs_text
-            result_data["compressed_context"] = original_context
-            result_data["original_tokens"] = original_tokens
-            result_data["compressed_tokens"] = original_tokens
-            result_data["compression_rate"] = 1.0
-
-            logger.warning(
-                f"Fallback to original documents due to compression error. "
-                f"Stats: {original_tokens} tokens"
-            )
-            return result_data
+            raise RuntimeError("RECOMP Abstractive compression failed") from e

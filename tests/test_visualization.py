@@ -501,8 +501,8 @@ class TestGenerateVisualizationReport:
             sample_results, output_dir=tmp_path, formats=["pdf", "png"]
         )
         # 应该有 PDF 和 PNG 版本
-        pdf_files = [k for k in files.keys() if "pdf" in k]
-        png_files = [k for k in files.keys() if "png" in k]
+        pdf_files = [k for k in files if "pdf" in k]
+        png_files = [k for k in files if "png" in k]
         assert len(pdf_files) > 0
         assert len(png_files) > 0
 
@@ -528,7 +528,7 @@ class TestGenerateVisualizationReport:
             formats=["png"],
         )
         # 应该包含热力图
-        heatmap_files = [k for k in files.keys() if "heatmap" in k]
+        heatmap_files = [k for k in files if "heatmap" in k]
         assert len(heatmap_files) > 0
 
     def test_creates_output_directory(self, sample_results, tmp_path):
